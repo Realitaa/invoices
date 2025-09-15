@@ -1,0 +1,40 @@
+Enum accepted {
+  "Sudah"
+  "Belum"
+  "Cancel"
+}
+
+Table invoice {
+  id string [primary key]
+  account_id string
+  npwp string
+  amount integer
+  reason string
+  payment boolean
+  flagging boolean
+  note text
+  due_date date
+  accepted_invoice accepted
+  delayed_paying_reason text
+  created_at timestamp
+}
+
+Table invoice_detail {
+  id integer [primary key]
+  invoice_id integer
+  service text
+  service_id string
+  bandwith integer
+  period string
+}
+
+Table account {
+  id string [primary key]
+  name string
+  address text
+  created_at timestamp
+}
+
+Ref invoice_id: invoice_detail.invoice_id > invoice.id // one-to-one
+
+Ref account_id: account.id < invoice.account_id
