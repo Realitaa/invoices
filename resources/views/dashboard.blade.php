@@ -1,15 +1,9 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config('app.name', 'Transactions') }} Dashboard</title>
-    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @endif
-</head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-4">
+@extends('layouts.app')
+
+@section('title', 'Dashboard Transaksi')
+
+@section('content')
+<div class="container mx-auto p-4">
         <h1 class="text-2xl font-bold mb-4">Riwayat Transaksi</h1>
 
         <!-- Form Filter -->
@@ -77,5 +71,4 @@
             {{ $transactions->links('vendor.pagination.tailwind') }}
         </div>
     </div>
-</body>
-</html>
+@endsection
