@@ -17,7 +17,7 @@ class InvoiceController extends Controller
         $perPage = $request->query('perPage', 10); // Default 10 item per halaman
 
         // Bangun query
-        $invoices = Invoice::select('invoices.account_id', 'accounts.name', 'invoices.amount', 'invoices.payment', 'invoices.flagging')
+        $invoices = Invoice::select('invoices.id', 'invoices.account_id', 'accounts.name', 'invoices.amount', 'invoices.payment', 'invoices.flagging')
             ->join('accounts', 'invoices.account_id', '=', 'accounts.id');
 
         // Paginate dengan query parameter
@@ -74,5 +74,11 @@ class InvoiceController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function print($num)
+    {
+        $invoice = Invoice::where('id', $num)->firstOrFail();
+        return view('print', compact('invoice'));
     }
 }
