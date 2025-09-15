@@ -19,9 +19,4 @@ class Account extends Model
         'name',
         'address',
     ];
-
-    public function invoices(): HasMany
-    {
-        return $this->hasMany(Invoice::class, 'account_id', 'id');
-    }
 }

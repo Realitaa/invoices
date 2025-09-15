@@ -17,9 +17,4 @@ class InvoiceDetail extends Model
         'bandwith',
         'period',
     ];
-
-    public function invoice(): BelongsTo
-    {
-        return $this->belongsTo(Invoice::class, 'invoice_id', 'id');
-    }
 }

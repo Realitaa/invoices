@@ -35,14 +35,4 @@ class Invoice extends Model
         'due_date' => 'date',
         'accepted_invoice' => 'string',
     ];
-
-    public function account(): BelongsTo
-    {
-        return $this->belongsTo(Account::class, 'account_id', 'id');
-    }
-
-    public function invoiceDetail(): HasOne
-    {
-        return $this->hasOne(InvoiceDetail::class, 'invoice_id', 'id');
-    }
 }
