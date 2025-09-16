@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
+use Illuminate\Support\Number;
 
 class InvoiceController extends Controller
 {
@@ -78,7 +79,25 @@ class InvoiceController extends Controller
 
     public function print($num)
     {
-        $invoice = Invoice::where('id', $num)->firstOrFail();
+        $invoice = Invoice::select('*')
+            ->join('accounts', 'invoices.account_id', '=', 'accounts.id')
+            ->where('invoices.id', $num)
+            ->firstOrFail();
+
+        // Calculate 11% of tax
+        $tax = 0.11 * $invoice->amount;
+        $invoice->tax = $tax;
+        // Format amount, tax, and total in Indonesian Rupiah format without decimal places
+        $invoice->total = Number::format($invoice->amount + $tax, 0, locale: 'id_ID');
+        // Format amount in Indonesian Rupiah format without decimal places
+        $invoice->amount = Number::format($invoice->amount, 0, locale: 'id_ID');
+        // Format tax in Indonesian Rupiah format without decimal places
+        $invoice->tax = Number::format($tax, 0, locale: 'id_ID');
+        // Payment Status
+        $invoice->status = $invoice->payment ? 'Completed Payment' : 'Pending Payment';
+        // QrCode data
+        $invoice->qrdata = $invoice->name . "\nNOMOR INVOICE : " . $invoice->id . '-' . date('Ymd') . "\nAMOUNT : " . $invoice->amount;
+
         return view('print', compact('invoice'));
     }
 }
