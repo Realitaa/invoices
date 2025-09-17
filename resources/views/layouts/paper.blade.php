@@ -10,11 +10,14 @@
     <style>@page { size: A4 }</style>
 </head>
 <body>
-    <div class="A4">
+    <div class="A4 break-after-page">
         @yield('page1')
     </div>
-    <div class="A4">
+    <div class="A4 break-after-page">
         @yield('page2')
+    </div>
+    <div class="A4 break-after-page">
+        @yield('page3')
     </div>
 </body>
 </html>

@@ -42,7 +42,7 @@
         <p class="mt-3 text-wrap w-130">{{ $invoice->address }}</p>
         <h2 class="text-lg font-bold text-end">
             <span class="mr-8">New Charge</span>
-            {{ $invoice->total }}
+            {{ $invoice->grand }}
             <span class="ml-2">(IDR)</span>
         </h2>
         <p class="mt-3 text-end">
@@ -92,7 +92,7 @@
             <div class="font-bold flex px-1 border-b-4 border-solid">
                 <span class="w-80">Grand Total</span>
                 <span class="w-full text-center">:</span>
-                <span>{{ $invoice->total }}</span>
+                <span>{{ $invoice->grand }}</span>
             </div>
             <div class="text-center flex flex-col">
                 <span>Medan, {{ \Carbon\Carbon::today()->locale('id')->translatedFormat('d F Y') }}</span>
@@ -177,7 +177,7 @@
             </tr>
             <tr></tr>
             <tr>
-                <td colspan="5" class="text-end font-bold">Total:</td>
+                <td colspan="5" class="text-end font-bold">TOTAL:</td>
                 <td class="font-bold text-end">{{ $invoice->amount }}</td>
             </tr>
             <tr>
@@ -186,11 +186,120 @@
             </tr>
             <tr>
                 <td colspan="5" class="text-end font-bold">GRAND TOTAL :</td>
-                <td class="font-bold text-end">{{ $invoice->total }}</td>
+                <td class="font-bold text-end">{{ $invoice->grand }}</td>
             </tr>
         </tbody>
     </table>
 
     <span class="text-[10px] mt-12">PT. Telkom Indonesia (Persero) Tbk -| Jl. Japati No. 1 Rt 000 Rw 000 Sadangserang Coblong Kota Bandung -| http://www.telkom.co.i</span>
+</div>
+@endsection
+
+@section('page3')
+<div class="w-full border-4">
+    <h1 class="underline font-bold text-3xl tracking-widest text-center">OFFICIAL RECEIPT</h1>
+    <p class="text-center">NO : {{ $invoice->id }}-periode</p>
+
+    <table class="mt-8 text-sm">
+        <tr class="align-top">
+            <td class="w-35 pl-3">
+                Sudah terima dari <br />
+                Received from
+            </td>
+            <td class="px-4">-</td>
+            <td class="w-130">
+                {{ $invoice->name }} <br />
+                {{ $invoice->address }} <br />
+                <br />
+                NPWP : {{ $invoice->npwp }}
+            </td>
+            <td class="p-3">{!! QrCode::size(100)->generate($invoice->qrdata) !!}</td>
+        </tr>
+        <tr class="align-top">
+            <td class="w-35 pl-3">
+                Uang sejumlah <br />
+                The sum of
+            </td>
+            <td class="px-4">-</td>
+            <td class="w-130" colspan="2">
+                {{ $invoice->terbilang }} <br />
+                {{ $invoice->spelled }} <br />
+            </td>
+        </tr>
+        <tr class="align-top">
+            <td class="w-35 pl-3">
+                Untuk pembayaran <br />
+                In payment of
+            </td>
+            <td class="px-4">-</td>
+            <td class="w-130" colspan="2">Biaya jasa layanan Telkom Solution / Telkom Solution service cost.</td>
+        </tr>
+        <tr class="align-top">
+            <td class="w-35 pl-3"></td>
+            <td class="px-4"></td>
+            <td class="" colspan="3">
+                <div class="w-full flex justify-between pr-3">
+                    <table>
+                        <tr>
+                            <td>Invoice Number</td>
+                            <td class="px-2">:</td>
+                            <td>{{ $invoice->id }}-periode</td>
+                        </tr>
+                        <tr>
+                            <td>Billing Month</td>
+                            <td class="px-2">:</td>
+                            <td>periode</td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td>Biaya / Cost</td>
+                            <td class="px-2">:</td>
+                            <td class="text-end">{{ $invoice->amount }}</td>
+                        </tr>
+                        <tr>
+                            <td>PPN / VAT</td>
+                            <td class="px-2">:</td>
+                            <td class="text-end">{{ $invoice->tax }}</td>
+                        </tr>
+                        <tr>
+                            <td>Material / Stamp Duty</td>
+                            <td class="px-2">:</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+        <tr class="align-top">
+            <td class="w-35 pl-3" colspan="2"></td>
+            <td class="" colspan="4">
+                <div class="w-full flex justify-between pr-3">
+                    <span class="">Total</span>
+                    <span class="text-end">{{ $invoice->grand }}</span>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div class="flex justify-end m-3">
+        <div class="flex flex-col text-center w-50">
+            <span>Medan, {{ \Carbon\Carbon::today()->locale('id')->translatedFormat('d F Y') }}</span>
+            <span class="font-bold mt-20 underline">MHD. ADNA MIRAZA</span>
+            <span>SM SHARED SERVICE & GENERAL SUPPORT REG I</span>
+        </div>
+    </div>
+</div>
+
+<div class="mt-8 text-sm">
+    <ul>
+        <li>Surat Penetapan Sebagai Pemungut Bea Meterai Nomor : S-27/PBM/PJ/2021, Tanggal : 21 Desember 2021</li>
+        <li>Kuitansi ini sah jika pembayaran telah diterima</li>
+    </ul>
+</div>
+
+<div class="mt-6 text-sm">
+    <ol>
+        <li>Official Appointment Letter as Stamp Duty Collector Number : S-27/PBM/PJ/2021, Dated : December 21, 2021</li>
+        <li> This billing receipt is valid only when the payment have already been received</li>
+    </ol>
 </div>
 @endsection

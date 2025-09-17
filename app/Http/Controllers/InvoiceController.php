@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Number;
-
+use Illuminate\Support\Str;
 class InvoiceController extends Controller
 {
     /**
@@ -87,8 +87,13 @@ class InvoiceController extends Controller
         // Calculate 11% of tax
         $tax = 0.11 * $invoice->amount;
         $invoice->tax = $tax;
-        // Format amount, tax, and total in Indonesian Rupiah format without decimal places
-        $invoice->total = Number::format($invoice->amount + $tax, 0, locale: 'id_ID');
+        $gtotal = round($invoice->amount + $tax);
+        // Spell the number in Indonesian words
+        $invoice->terbilang = Str::headline(Number::spell($gtotal, locale: 'id_ID'));
+        // Spell the number in English words
+        $invoice->spelled = Str::headline(Number::spell($gtotal));
+        // Format amount, tax, and grand total in Indonesian Rupiah format without decimal places
+        $invoice->grand = Number::format($gtotal, 0, locale: 'id_ID');
         // Format amount in Indonesian Rupiah format without decimal places
         $invoice->amount = Number::format($invoice->amount, 0, locale: 'id_ID');
         // Format tax in Indonesian Rupiah format without decimal places
