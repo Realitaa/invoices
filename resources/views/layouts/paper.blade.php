@@ -9,7 +9,12 @@
     @endif
     <style>@page { size: A4 }</style>
 </head>
-<body class="A4">
-    @yield('content')
+<body>
+    <div class="A4">
+        @yield('page1')
+    </div>
+    <div class="A4">
+        @yield('page2')
+    </div>
 </body>
 </html>
