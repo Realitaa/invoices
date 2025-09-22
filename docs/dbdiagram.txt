@@ -4,37 +4,58 @@ Enum accepted {
   "Cancel"
 }
 
+Enum reason {
+  "PROSES AOSODOMORO"
+  "RENEWAL KONTRAK"
+  "ADJUSTMENT"
+  "BUNDLING"
+  "BY REKON/USAGE"
+}
+
 Table invoice {
-  id string [primary key]
-  account_id string
-  npwp string
+  id string [primary key] // manual
+  customer_id string
   amount integer
-  reason string
-  payment boolean
-  flagging boolean
-  note text
+  reason reason
+  payment_status boolean
+  periode date
+  // bank & va merupakan kombinasi va dan id
   due_date date
   accepted_invoice accepted
   delayed_paying_reason text
   created_at timestamp
 }
 
-Table invoice_detail {
-  id integer [primary key]
-  invoice_id integer
-  service text
-  service_id string
-  bandwith integer
-  period string
-}
-
-Table account {
-  id string [primary key]
+// check
+Table customer {
+  id string [primary key] // manual, nomor customer
   name string
   address text
+  npwp string
   created_at timestamp
 }
 
-Ref invoice_id: invoice_detail.invoice_id > invoice.id // one-to-one
+// Planned for NoSQL 
+Table service {
+  id string [primary key]
+  invoice_id string
+  name string
+  bandwith integer
+  tarif integer
+}
 
-Ref account_id: account.id < invoice.account_id
+// Kandidat table
+Table invoice_reason {
+  id integer [primary key]
+  invoice_id string
+  manual_invoice_reason text
+  order_number string
+  last_status text
+  commitment date
+}
+
+Ref account_id: customer.id < invoice.customer_id
+
+Ref invoice_id : "service"."invoice_id" < "invoice"."id"
+
+Ref: "invoice_reason"."invoice_id" < "invoice"."id"
