@@ -13,19 +13,18 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->string('account_id');
-            $table->string('npwp');
+            $table->string('customer_id');
             $table->integer('amount');
-            $table->string('reason');
-            $table->boolean('payment');
-            $table->boolean('flagging');
-            $table->text('note')->nullable();
+            $table->enum('reason', ['PROSES AOSODOMORO', 'RENEWAL KONTRAK', 'ADJUSTMENT', 'BUNDLING', 'BY REKON/USAGE']);
+            $table->boolean('payment_status');
+            $table->integer('year_periode');
+            $table->tinyInteger('month_periode');
             $table->date('due_date');
             $table->enum('accepted_invoice', ['Sudah', 'Belum', 'Cancel']);
             $table->text('delayed_paying_reason')->nullable();
             $table->timestamps();
 
-            $table->foreign('account_id')->references('id')->on('accounts')->onDelete('cascade');
+            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
         });
     }
 
