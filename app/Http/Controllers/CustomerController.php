@@ -39,7 +39,23 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validasi input
+        $request->validate([
+            'id' => 'required|unique:customers,id',
+            'name' => 'required|string|max:255',
+            'npwp' => 'required|string|max:255',
+            'address' => 'required|string',
+        ]);
+
+        // Simpan data customer baru
+        $customer = new Customer();
+        $customer->id = $request->input('id');
+        $customer->name = $request->input('name');
+        $customer->npwp = $request->input('npwp');
+        $customer->address = $request->input('address');
+        $customer->save();
+
+        return redirect()->route('customer.index')->with('success', 'Customer berhasil disimpan.');
     }
 
     /**
