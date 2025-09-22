@@ -26,7 +26,7 @@ class InvoiceController extends Controller
             'perPage' => $perPage,
         ]);
 
-        return view('invoice', compact('invoices'));
+        return view('invoice.index', compact('invoices'));
     }
 
     /**
@@ -34,7 +34,7 @@ class InvoiceController extends Controller
      */
     public function create()
     {
-        return view('create');
+        return view('invoice.create');
     }
 
     /**
@@ -103,6 +103,6 @@ class InvoiceController extends Controller
         // QrCode data
         $invoice->qrdata = $invoice->name . "\nNOMOR INVOICE : " . $invoice->id . '-' . date('Ymd') . "\nAMOUNT : " . $invoice->amount;
 
-        return view('print', compact('invoice'));
+        return view('invoice.print', compact('invoice'));
     }
 }
