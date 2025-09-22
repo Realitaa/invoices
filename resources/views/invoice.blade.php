@@ -9,7 +9,7 @@
         <!-- Form Filter -->
         <form method="GET" action="{{ route('dashboard.index') }}" class="mb-4 flex space-x-4">
             <!-- Filter Status -->
-            <div>
+            <!-- <div>
                 <label for="status" class="mr-2">Status:</label>
                 <select name="status" id="status" onchange="this.form.submit()" class="border rounded px-2 py-1">
                     <option value="">Semua</option>
@@ -17,11 +17,11 @@
                     <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                     <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Failed</option>
                 </select>
-            </div>
+            </div> -->
 
             <!-- Filter Pencarian -->
             <div>
-                <label for="search" class="mr-2">Cari Pengguna:</label>
+                <label for="search" class="mr-2">Cari:</label>
                 <input type="text" name="search" id="search" value="{{ request('search') }}" class="border rounded px-2 py-1" placeholder="Nama pengguna" x-model.debounce.500ms="this.form.submit()">
             </div>
 
@@ -46,8 +46,7 @@
                         <th class="py-3 px-6 text-left">ID Akun</th>
                         <th class="py-3 px-6 text-left">Nama Akun</th>
                         <th class="py-3 px-6 text-left">Jumlah</th>
-                        <th class="py-3 px-6 text-left">Kelunasan</th>
-                        <th class="py-3 px-6 text-left">Flagging</th>
+                        <th class="py-3 px-6 text-left">Lunas?</th>
                         <th class="py-3 px-6 text-left">Aksi</th>
                     </tr>
                 </thead>
