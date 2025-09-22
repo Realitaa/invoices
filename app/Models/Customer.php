@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Account extends Model
+class Customer extends Model
 {
     use HasFactory;
 
@@ -18,5 +18,6 @@ class Account extends Model
         'id',
         'name',
         'address',
+        'npwp',
     ];
 }

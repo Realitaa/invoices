@@ -17,21 +17,19 @@ class Invoice extends Model
 
     protected $fillable = [
         'id',
-        'account_id',
-        'npwp',
+        'customer_id',
         'amount',
         'reason',
-        'payment',
-        'flagging',
-        'note',
+        'payment_status',
+        'year_periode',
+        'month_periode',
         'due_date',
         'accepted_invoice',
         'delayed_paying_reason',
     ];
 
     protected $casts = [
-        'payment' => 'boolean',
-        'flagging' => 'boolean',
+        'payment_status' => 'boolean',
         'due_date' => 'date',
         'accepted_invoice' => 'string',
     ];
