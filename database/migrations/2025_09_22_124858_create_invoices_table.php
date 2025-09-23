@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('delayed_paying_reason')->nullable();
             $table->timestamps();
 
-            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
+            $table->foreign('customer_id')->references('id_number')->on('customers')->onDelete('cascade');
         });
     }
 
