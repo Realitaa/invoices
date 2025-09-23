@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('invoices', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('customer_id');
-            $table->integer('amount');
             $table->enum('reason', ['PROSES AOSODOMORO', 'RENEWAL KONTRAK', 'ADJUSTMENT', 'BUNDLING', 'BY REKON/USAGE']);
             $table->boolean('payment_status');
             $table->integer('year_periode');
