@@ -14,34 +14,32 @@ Enum reason {
 
 Table invoice {
   id string [primary key] // manual
-  customer_id string
-  amount integer
+  customer_id uuid
   reason reason
   payment_status boolean
-  periode date
+  month_periode tinyint
+  year_periode int
   // bank & va merupakan kombinasi va dan id
   due_date date
   accepted_invoice accepted
+  // apakah ini dibutuhkan?
   delayed_paying_reason text
   created_at timestamp
 }
 
-// check
-Table customer {
-  id string [primary key] // manual, nomor customer
-  name string
+// mengambil data dari existing tables
+Table customers {
+  id uuid [primary key]
+  id_number varchar
+  account_name varchar
+  npwp_trems varchar
   address text
-  npwp string
+  ubis varchar
+  bisnis_area varchar
+  business_share varchar
+  divisi varchar
+  witel varchar
   created_at timestamp
-}
-
-// Planned for NoSQL 
-Table service {
-  id string [primary key]
-  invoice_id string
-  name string
-  bandwith integer
-  tarif integer
 }
 
 // Kandidat table
@@ -54,8 +52,29 @@ Table invoice_reason {
   commitment date
 }
 
-Ref account_id: customer.id < invoice.customer_id
+// Tabel daftar service pada invoices
+Table services {
+  id integer [primary key]
+  invoice_id uuid
+  name varchar
+}
 
-Ref invoice_id : "service"."invoice_id" < "invoice"."id"
+// Table untuk menyimpan daftar services
+Table service_items {
+  id integer [primary key]
+  service_id uuid
+  description text
+  service_items_id varchar
+  bandwith varchar
+  year_periode integer
+  month_periode tinyint
+  amount bigint
+}
+
+Ref account_id: customers.id < invoice.customer_id
 
 Ref: "invoice_reason"."invoice_id" < "invoice"."id"
+
+Ref: "services"."invoice_id" < "invoice"."id"
+
+Ref: "service_items"."service_id" < "services"."id"
