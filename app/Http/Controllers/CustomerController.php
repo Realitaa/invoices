@@ -39,23 +39,23 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input
-        $request->validate([
-            'id' => 'required|unique:customers,id',
-            'name' => 'required|string|max:255',
-            'npwp' => 'required|string|max:255',
-            'address' => 'required|string',
-        ]);
+        // // Validasi input
+        // $request->validate([
+        //     'id' => 'required|unique:customers,id',
+        //     'name' => 'required|string|max:255',
+        //     'npwp' => 'required|string|max:255',
+        //     'address' => 'required|string',
+        // ]);
 
-        // Simpan data customer baru
-        $customer = new Customer();
-        $customer->id = $request->input('id');
-        $customer->name = $request->input('name');
-        $customer->npwp = $request->input('npwp');
-        $customer->address = $request->input('address');
-        $customer->save();
+        // // Simpan data customer baru
+        // $customer = new Customer();
+        // $customer->id = $request->input('id');
+        // $customer->name = $request->input('name');
+        // $customer->npwp = $request->input('npwp');
+        // $customer->address = $request->input('address');
+        // $customer->save();
 
-        return redirect()->route('customer.index')->with('success', 'Customer berhasil disimpan.');
+        // return redirect()->route('customer.index')->with('success', 'Customer berhasil disimpan.');
     }
 
     /**
@@ -88,5 +88,29 @@ class CustomerController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+     * Fetch customers based on query parameters and return as JSON.
+     */
+    public function fetch(Request $request)
+    {
+        // Ambil query parameter dari request
+        $search = $request->query('query', '');
+
+        // Bangun query
+        $query = Customer::query();
+
+        if (!empty($search)) {
+            $query->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('npwp', 'like', '%' . $search . '%')
+                  ->orWhere('address', 'like', '%' . $search . '%');
+        }
+
+        // Ambil maksimal 10 data
+        $customers = $query->limit(10)->get();
+
+        // Kembalikan hasil dalam bentuk JSON
+        return response()->json($customers);
     }
 }

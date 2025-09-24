@@ -10,14 +10,19 @@ class Customer extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'id_number';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
-        'id',
-        'name',
+        'id_number',
+        'account_name',
+        'npwp_trems',
         'address',
-        'npwp',
+        'ubis',
+        'bisnis_area',
+        'business_share',
+        'divisi',
+        'witel',
     ];
 }
