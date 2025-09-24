@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->string('customer_id');
+            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->enum('reason', ['PROSES AOSODOMORO', 'RENEWAL KONTRAK', 'ADJUSTMENT', 'BUNDLING', 'BY REKON/USAGE']);
             $table->boolean('payment_status');
             $table->integer('year_periode');
@@ -22,8 +22,6 @@ return new class extends Migration
             $table->enum('accepted_invoice', ['Sudah', 'Belum', 'Cancel']);
             $table->text('delayed_paying_reason')->nullable();
             $table->timestamps();
-
-            $table->foreign('customer_id')->references('id_number')->on('customers')->onDelete('cascade');
         });
     }
 

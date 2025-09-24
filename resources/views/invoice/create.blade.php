@@ -209,7 +209,7 @@
     <!-- Tabel Service dan Service Item -->
     <template x-for="(service, sIdx) in services" :key="service.id">
         <div class="mb-6 border rounded p-4 bg-gray-50">
-            <div class="flex items-center mb-2">
+            <div class="flex items-center mb-2">    
                 <input type="text" x-model="service.name" placeholder="Nama Service"
                     class="mr-2 px-2 py-1 border rounded w-3/4" />
                 <button type="button" @click="removeService(sIdx)"
