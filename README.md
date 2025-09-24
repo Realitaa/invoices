@@ -1,6 +1,6 @@
 # Invoices
 
-Ini adalah aplikasi untuk membuat invoices.
+Ini adalah website untuk membuat invoices.
 
 ## Pre-requirement
 
@@ -19,16 +19,10 @@ Ini adalah aplikasi untuk membuat invoices.
     npm install && npm run dev
     ```
 
-2. Jalankan migrasi database
+2. Jalankan migrasi database dan database seeder untuk mengisi tabel customer dengan data dummy.
 
     ```sh
-    php artisan migrate
-    ```
-
-3. Jalankan database seeder untuk data dummy pada tabel customer
-
-    ```sh
-    php artisan seed
+    php artisan migrate --seed
     ```
 
 4. Akses di localhost.
@@ -42,6 +36,6 @@ Library PHP:
 + `yajra/laravel-oci8` > Laravel Oracle database driver
 
 Library JS:
-+ `alpinejs` > library peningkat interaktivitas secara deklaratif dan interaktif.
++ `alpinejs` > library interaktivitas secara deklaratif dan interaktif.
 + `paper-css` > library untuk template invoice
 + `toastify-js` > library untuk notifikasi toast
