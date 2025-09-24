@@ -12,9 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('customers', function (Blueprint $table) {
-            $table->string('id_number');
+            $table->string('id_number')->primary();
             $table->string('account_name');
             $table->string('npwp_trems');
+            $table->text('address');
             $table->string('ubis');
             $table->string('bisnis_area');
             $table->string('business_share');
