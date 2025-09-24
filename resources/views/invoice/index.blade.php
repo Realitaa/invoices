@@ -7,7 +7,7 @@
         <h1 class="text-2xl font-bold mb-4">Daftar Invoice</h1>
 
         <!-- Form Filter -->
-        <form method="GET" action="{{ route('invoice.index') }}" class="mb-4 flex space-x-4">
+        <form method="GET" action="{{ route('invoice.index') }}" class="mb-4 flex space-x-4 items-center">
             <!-- Filter Status -->
             <!-- <div>
                 <label for="status" class="mr-2">Status:</label>
@@ -22,7 +22,7 @@
             <!-- Filter Pencarian -->
             <div>
                 <label for="search" class="mr-2">Cari:</label>
-                <input type="text" name="search" id="search" value="{{ request('search') }}" class="border rounded px-2 py-1" placeholder="Nama pengguna" x-model.debounce.500ms="this.form.submit()">
+                <input type="text" name="search" id="search" value="{{ request('search') }}" class="border rounded px-2 py-1" placeholder="Nama akun" x-model.debounce.500ms="this.form.submit()">
             </div>
 
             <!-- Jumlah per Halaman -->
@@ -37,6 +37,8 @@
 
             <!-- Tombol Submit -->
             <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Filter</button>
+
+            <a href="{{ route('invoice.create') }}" type="button" class="ml-auto px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Tambah</a>
         </form>
 
         <div class="overflow-x-auto">
