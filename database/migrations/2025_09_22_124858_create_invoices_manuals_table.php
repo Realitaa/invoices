@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invoice_manual', function (Blueprint $table) {
+        Schema::create('invoice_manuals', function (Blueprint $table) {
             $table->id();
             $table->string('idnumber')->nullable();
             $table->string('nama')->nullable();
@@ -25,6 +25,7 @@ return new class extends Migration
             $table->text('keterangan_invoice_manual')->nullable();
             $table->string('nomor_order')->nullable();
             $table->string('status_order_terakhir')->nullable();
+            $table->date('tanggal_komitmen_penyelesaian')->nullable();
             $table->timestamps();
         });
     }

@@ -131,7 +131,7 @@ class CustomerController extends Controller
 
         if (!empty($search)) {
             $query = DB::connection('oracle')->table($tableName)
-            ->select('IDNUMBER', 'BPNAME')
+            ->select('IDNUMBER', 'BPNAME', 'NPWP_TREMS')
             ->distinct()
             ->whereRaw("BPNAME LIKE '%" . strtoupper($search) . "%' OR IDNUMBER LIKE '%" . strtoupper($search) . "%'");
         }

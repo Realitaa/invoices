@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('invoice_manual_products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_manual_id')->constrained('invoice_manual')->onDelete('cascade');
+            $table->foreignId('invoice_manual_id')->constrained('invoice_manuals')->onDelete('cascade');
             $table->string('product_name')->nullable();
         });
     }

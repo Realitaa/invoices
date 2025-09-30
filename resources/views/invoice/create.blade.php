@@ -2,6 +2,60 @@
 
 @section('title', 'Insert Invoice')
 
+@section('scripts')
+<script>
+    function serviceTable() {
+        return {
+            services: [],
+            addService() {
+                this.services.push({
+                    id: Date.now() + Math.random(),
+                    name: '',
+                    items: []
+                });
+            },
+            removeService(idx) {
+                this.services.splice(idx, 1);
+            },
+            addServiceItem(serviceIdx) {
+                this.services[serviceIdx].items.push({
+                    id: Date.now() + Math.random(),
+                });
+            },
+            removeServiceItem(serviceIdx, itemIdx) {
+                this.services[serviceIdx].items.splice(itemIdx, 1);
+            }
+        }
+    }
+
+    function dropdownSearch() {
+        return {
+            query: '',
+            results: [],
+            selectedValue: '',
+            search() {
+                if (this.query.length > 0) {
+                    fetch(`/api/customer/search?query=${this.query}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            this.results = data;
+                        });
+                } else {
+                    this.results = [];
+                }
+            },
+            select(result) {
+                this.query = result.idnumber + ' - ' +result.bpname;
+                this.selectedValueId = result.idnumber;
+                this.selectedValueName = result.bpname;
+                this.selectedValueNPWP = result.npwp_trems;
+                this.results = [];
+            }
+        };
+    }
+</script>
+@endsection
+
 @section('content')
 <div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
     <div class="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -17,64 +71,83 @@
 
             <h2 class="text-xl font-bold text-gray-900">Detail Invoice</h2>
 
-            <div x-data="dropdownSearch()" class="relative">
-                <label for="searchable_dropdown" class="block text-sm font-medium text-gray-700 mb-2">
-                    Pemilik Invoice <span class="text-red-500">*</span>
-                </label>
-                <input type="text"
-                       id="searchable_dropdown"
-                       x-model="query"
-                       @input.debounce.500ms="search"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-                       placeholder="Search...">
-                <div x-show="results.length > 0" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
-                    <ul>
-                        <template x-for="result in results" :key="result.rn">
-                            <li @click="select(result)" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                <span x-text="result.idnumber"></span> - <span x-text="result.bpname"></span>
-                            </li>
-                        </template>
-                    </ul>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div x-data="dropdownSearch()" class="relative">
+                    <label for="searchable_dropdown" class="block text-sm font-medium text-gray-700 mb-2">
+                        Pemilik Invoice <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text"
+                        id="searchable_dropdown"
+                        x-model="query"
+                        @input.debounce.500ms="search"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                        placeholder="Search...">
+                    <div x-show="results.length > 0" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                        <ul>
+                            <template x-for="result in results" :key="result.rn">
+                                <li @click="select(result)" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                                    <span x-text="result.idnumber"></span> - <span x-text="result.bpname"></span>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                    <input type="hidden" name="idnumber" :value="selectedValueId">
+                    <input type="hidden" name="nama" :value="selectedValueName">
+                    <input type="hidden" name="npwp" :value="selectedValueNPWP">
+                    @error('id')
+                        <p class="mt-1 text-sm text-red-600">Anda belum memilih customer</p>
+                    @enderror
                 </div>
-                <input type="hidden" name="customer_id" :value="selectedValue">
-                @error('id')
-                    <p class="mt-1 text-sm text-red-600">Anda belum memilih customer</p>
-                @enderror
+
+                <div>
+                    <label for="nomor_tagihan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Tagihan <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text"
+                           id="nomor_tagihan"
+                           name="nomor_tagihan"
+                           value="{{ old('nomor_tagihan') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('due_date') border-red-500 @enderror"
+                           required>
+                    @error('nomor_tagihan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
             <!-- Row 1: Reason and Due Date -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="reason" class="block text-sm font-medium text-gray-700 mb-2">
-                        Alasan Invoice <span class="text-red-500">*</span>
+                        Tipe Invoices Manual <span class="text-red-500">*</span>
                     </label>
-                    <select id="reason"
-                            name="reason"
+                    <select id="tipe_invoice_manual"
+                            name="tipe_invoice_manual"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('payment') border-red-500 @enderror"
                             required>
                         <option value="">Pilih Alasan</option>
-                        <option value="1" {{ old('reason') == 'PROSES AOSODOMORO' ? 'selected' : '' }}>PROSES AOSODOMORO</option>
-                        <option value="2" {{ old('reason') == 'RENEWAL KONTRAK' ? 'selected' : '' }}>RENEWAL KONTRAK</option>
-                        <option value="3" {{ old('reason') == 'ADJUSTMENT' ? 'selected' : '' }}>ADJUSTMENT</option>
-                        <option value="4" {{ old('reason') == 'BUNDLING' ? 'selected' : '' }}>BUNDLING</option>
-                        <option value="5" {{ old('reason') == 'BY REKON/USAGE' ? 'selected' : '' }}>BY REKON/USAGE</option>
+                        <option value="PROSES AOSODOMORO" {{ old('tipe_invoice_manual') == 'PROSES AOSODOMORO' ? 'selected' : '' }}>PROSES AOSODOMORO</option>
+                        <option value="RENEWAL KONTRAK" {{ old('tipe_invoice_manual') == 'RENEWAL KONTRAK' ? 'selected' : '' }}>RENEWAL KONTRAK</option>
+                        <option value="ADJUSTMENT" {{ old('tipe_invoice_manual') == 'ADJUSTMENT' ? 'selected' : '' }}>ADJUSTMENT</option>
+                        <option value="BUNDLING" {{ old('tipe_invoice_manual') == 'BUNDLING' ? 'selected' : '' }}>BUNDLING</option>
+                        <option value="BY REKON/USAGE" {{ old('tipe_invoice_manual') == 'BY REKON/USAGE' ? 'selected' : '' }}>BY REKON/USAGE</option>
                     </select>
-                    @error('reason')
+                    @error('tipe_invoice_manual')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="due_date" class="block text-sm font-medium text-gray-700 mb-2">
-                        Tanggal Jatuh Tempo <span class="text-red-500">*</span>
+                    <label for="tanggal_akhir_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tanggal Akhir Pembayaran <span class="text-red-500">*</span>
                     </label>
                     <input type="date"
-                           id="due_date"
-                           name="due_date"
-                           value="{{ old('due_date') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('due_date') border-red-500 @enderror"
+                           id="tanggal_akhir_pembayaran"
+                           name="tanggal_akhir_pembayaran"
+                           value="{{ old('tanggal_akhir_pembayaran') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('tanggal_akhir_pembayaran') border-red-500 @enderror"
                            required>
-                    @error('due_date')
+                    @error('tanggal_akhir_pembayaran')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -83,118 +156,116 @@
             <!-- Row 2: NPWP and Amount -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="month_periode" class="block text-sm font-medium text-gray-700 mb-2">
-                        Bulan Periode <span class="text-red-500">*</span>
+                    <label for="bulan_tagihan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Bulan Tagihan <span class="text-red-500">*</span>
                     </label>
-                    <select id="month_periode"
-                            name="month_periode"
+                    <select id="bulan_tagihan"
+                            name="bulan_tagihan"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('payment') border-red-500 @enderror"
                             required>
                         <option value="">Pilih Bulan</option>
                         @for ($i = 1; $i <=12; $i++)
-                            <option value="{{ $i }}" {{ old('month_periode') == $i ? 'selected' : '' }}>{{ DateTime::createFromFormat('!m', $i)->format('m') }}</option>
+                            <option value="{{ $i }}" {{ old('bulan_tagihan') == $i ? 'selected' : '' }}>{{ DateTime::createFromFormat('!m', $i)->format('m') }}</option>
                         @endfor
                     </select>
-                    @error('month_periode')
+                    @error('bulan_tagihan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="year_periode" class="block text-sm font-medium text-gray-700 mb-2">
-                        Tahun Periode <span class="text-red-500">*</span>
+                    <label for="tahun_tagihan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tahun Tagihan <span class="text-red-500">*</span>
                     </label>
                     <input type="year"
-                           id="year_periode"
-                           name="year_periode"
-                           value="{{ old('year_periode') ? old('year_periode') : date('Y') }}"
+                           id="tahun_tagihan"
+                           name="tahun_tagihan"
+                           value="{{ old('tahun_tagihan') ? old('tahun_tagihan') : date('Y') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('due_date') border-red-500 @enderror"
                            required>
-                    @error('year_periode')
+                    @error('tahun_tagihan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
-            <!-- Row 3: Delayed Paying Reason (Full Width) -->
-            <!-- <div>
-                <label for="delayed_paying_reason" class="block text-sm font-medium text-gray-700 mb-2">
-                    Alasan Keterlambatan Pembayaran
+            <!-- Row 3: Address (Full Width) -->
+            <div>
+                <label for="alamat" class="block text-sm font-medium text-gray-700 mb-2">
+                    Alamat
                 </label>
-                <textarea id="delayed_paying_reason"
-                          name="delayed_paying_reason"
+                <textarea id="alamat"
+                          name="alamat"
                           rows="4"
                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('note') border-red-500 @enderror"
-                          placeholder="Enter any additional notes or comments">{{ old('note') }}</textarea>
+                          placeholder="Masukkan alamat">{{ old('alamat') }}</textarea>
                 @error('note')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
-            </div> -->
+            </div>
 
-            <h2 class="text-xl font-bold text-gray-900">Alasan Invoice Manual</h2>
+            <h2 class="text-xl font-bold text-gray-900">Keterangan Invoice Manual</h2>
 
             <div>
-                <label for="manual_invoice_reason" class="block text-sm font-medium text-gray-700 mb-2">
-                    Alasan Invoice Manual
+                <label for="keterangan_invoice_manual" class="block text-sm font-medium text-gray-700 mb-2">
+                    Keterangan Invoice Manual
                 </label>
-                <textarea id="manual_invoice_reason"
-                          name="manual_invoice_reason"
+                <textarea id="keterangan_invoice_manual"
+                          name="keterangan_invoice_manual"
                           rows="4"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('manual_invoice_reason') border-red-500 @enderror"
-                          placeholder="Masukkan alasan terhadap invoice manual">{{ old('manual_invoice_reason') }}</textarea>
-                @error('manual_invoice_reason')
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('keterangan_invoice_manual') border-red-500 @enderror"
+                          placeholder="Masukkan alasan terhadap invoice manual">{{ old('keterangan_invoice_manual') }}</textarea>
+                @error('keterangan_invoice_manual')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="order_number" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="nomor_order" class="block text-sm font-medium text-gray-700 mb-2">
                         Nomor Order <span class="text-red-500">*</span>
                     </label>
                     <input type="text"
-                           id="order_number"
-                           name="order_number"
-                           value="{{ old('order_number') ? old('order_number') : date('Y') }}"
+                           id="nomor_order"
+                           name="nomor_order"
+                           value="{{ old('nomor_order') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('due_date') border-red-500 @enderror"
                            required>
-                    @error('order_number')
+                    @error('nomor_order')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="commitment_date" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="tanggal_komitmen_penyelesaian" class="block text-sm font-medium text-gray-700 mb-2">
                         Tanggal Komitmen Penyelesaian <span class="text-red-500">*</span>
                     </label>
                     <input type="date"
-                           id="commitment_date"
-                           name="commitment_date"
-                           value="{{ old('commitment_date') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('commitment_date') border-red-500 @enderror"
+                           id="tanggal_komitmen_penyelesaian"
+                           name="tanggal_komitmen_penyelesaian"
+                           value="{{ old('tanggal_komitmen_penyelesaian') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('tanggal_komitmen_penyelesaian') border-red-500 @enderror"
                            required>
-                    @error('commitment_date')
+                    @error('tanggal_komitmen_penyelesaian')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
+
             <div>
-                <div class="flex items-center">
-                    <input type="checkbox"
-                           id="last_order_status"
-                           name="last_order_status"
-                           value="1"
-                           {{ old('last_order_status') ? 'checked' : '' }}
-                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="last_order_status" class="ml-2 block text-sm text-gray-700">
-                        Status Order Terakhir
+                    <label for="status_order_terakhir" class="block text-sm font-medium text-gray-700 mb-2">
+                        Status Order Terakhir <span class="text-red-500">*</span>
                     </label>
+                    <input type="text"
+                           id="status_order_terakhir"
+                           name="status_order_terakhir"
+                           value="{{ old('status_order_terakhir') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('due_date') border-red-500 @enderror"
+                           required>
+                    @error('status_order_terakhir')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
-                <p class="mt-1 text-xs text-gray-500">Check jika status pembayaran sudah complete</p>
-                @error('last_order_status')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
 
             <h2 class="text-xl font-bold text-gray-900">Detail Service</h2>
 
@@ -284,56 +355,4 @@
         </form>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    function serviceTable() {
-        return {
-            services: [],
-            addService() {
-                this.services.push({
-                    id: Date.now() + Math.random(),
-                    name: '',
-                    items: []
-                });
-            },
-            removeService(idx) {
-                this.services.splice(idx, 1);
-            },
-            addServiceItem(serviceIdx) {
-                this.services[serviceIdx].items.push({
-                    id: Date.now() + Math.random(),
-                });
-            },
-            removeServiceItem(serviceIdx, itemIdx) {
-                this.services[serviceIdx].items.splice(itemIdx, 1);
-            }
-        }
-    }
-
-    function dropdownSearch() {
-        return {
-            query: '',
-            results: [],
-            selectedValue: '',
-            search() {
-                if (this.query.length > 0) {
-                    fetch(`/api/customer/search?query=${this.query}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            this.results = data;
-                        });
-                } else {
-                    this.results = [];
-                }
-            },
-            select(result) {
-                this.query = result.idnumber + ' - ' +result.bpname;
-                this.selectedValue = result.idnumber;
-                this.results = [];
-            }
-        };
-    }
-</script>
 @endsection

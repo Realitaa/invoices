@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Invoice;
+use App\Models\InvoiceManuals;
 use Illuminate\Http\Request;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
-
 class InvoiceController extends Controller
 {
     /**
@@ -19,8 +18,8 @@ class InvoiceController extends Controller
         $perPage = $request->query('perPage', 10); // Default 10 item per halaman
 
         // Bangun query
-        $invoices = Invoice::select('invoices.id', 'invoices.customer_id', 'customers.name', 'invoices.amount', 'invoices.payment', 'invoices.flagging')
-            ->join('customers', 'invoices.customer_id', '=', 'customers.id');
+        $invoices = InvoiceManuals::select('*');
+            // ->join('customers', 'invoices.customer_id', '=', 'customers.id');
 
         // Paginate dengan query parameter
         $invoices = $invoices->paginate($perPage)->appends([
@@ -43,7 +42,29 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validasi data
+        $validated = $request->validate([
+            'idnumber' => 'nullable|string|max:255',
+            'nama' => 'nullable|string|max:255',
+            'alamat' => 'nullable|string',
+            'nomor_tagihan' => 'nullable|string|max:255',
+            'npwp' => 'nullable|string|max:255',
+            'tahun_tagihan' => 'nullable|integer',
+            'bulan_tagihan' => 'nullable|integer|min:1|max:12',
+            'tanggal_akhir_pembayaran' => 'nullable|date',
+            'tipe_invoice_manual' => 'nullable|in:PROSES AOSODOMORO,RENEWAL KONTRAK,ADJUSTMENT,BUNDLING,BY REKON/USAGE',
+            'keterangan_invoice_manual' => 'nullable|string',
+            'nomor_order' => 'nullable|string|max:255',
+            'status_order_terakhir' => 'nullable|string|max:255',
+            'tanggal_komitmen_penyelesaian' => 'nullable|string|max:255',
+        ]);
+
+        // Simpan ke database
+        $invoice = InvoiceManuals::create($validated);
+
+        // Response, bisa redirect atau json
+        return redirect()->route('invoice.index')
+            ->with('success', 'Invoice manual berhasil ditambahkan.');
     }
 
     /**

@@ -55,10 +55,10 @@
                 <tbody class="text-slate-600">
                     @foreach ($invoices as $invoice)
                         <tr class="border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-3 px-6 text-left">{{ $invoice->account_id }}</td>
-                            <td class="py-3 px-6 text-left">{{ $invoice->name }}</td>
-                            <td class="py-3 px-6 text-left">Rp {{ number_format($invoice->amount, 2, ',', '.') }}</td>
-                            <td class="py-3 px-6 text-left">
+                            <td class="py-3 px-6 text-left">{{ $invoice->idnumber }}</td>
+                            <td class="py-3 px-6 text-left">{{ $invoice->nama }}</td>
+                            <!-- <td class="py-3 px-6 text-left">Rp {{ number_format($invoice->amount, 2, ',', '.') }}</td> -->
+                            <!-- <td class="py-3 px-6 text-left">
                                 <span class="px-2 py-1 rounded {{ $invoice->payment ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' }}">
                                     {{ $invoice->payment ? 'Lunas' : 'Belum Lunas' }}
                                 </span>
@@ -67,7 +67,7 @@
                                 <span class="px-2 py-1 rounded {{ $invoice->flagging ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' }}">
                                     {{ $invoice->flagging ? 'Sudah' : 'Belum' }}
                                 </span>
-                            </td>
+                            </td> -->
                             <td class="py-3 px-6 text-left">
                                 <a href="{{ route('invoice.print', ['num' => $invoice->id]) }}" class="text-blue-500 hover:underline cursor-pointer" title="print" target="_blank">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">

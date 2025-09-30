@@ -28,6 +28,7 @@ class InvoiceManuals extends Model
         "keterangan_invoice_manual",
         "nomor_order",
         "status_order_terakhir",
+        "tanggal_komitmen_penyelesaian",
     ];
 
     protected $casts = [
