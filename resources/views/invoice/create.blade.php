@@ -29,9 +29,9 @@
                        placeholder="Search...">
                 <div x-show="results.length > 0" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
                     <ul>
-                        <template x-for="result in results" :key="result.id">
+                        <template x-for="result in results" :key="result.rn">
                             <li @click="select(result)" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                <span x-text="result.id"></span> - <span x-text="result.name"></span>
+                                <span x-text="result.idnumber"></span> - <span x-text="result.bpname"></span>
                             </li>
                         </template>
                     </ul>
@@ -209,7 +209,7 @@
     <!-- Tabel Service dan Service Item -->
     <template x-for="(service, sIdx) in services" :key="service.id">
         <div class="mb-6 border rounded p-4 bg-gray-50">
-            <div class="flex items-center mb-2">    
+            <div class="flex items-center mb-2">
                 <input type="text" x-model="service.name" placeholder="Nama Service"
                     class="mr-2 px-2 py-1 border rounded w-3/4" />
                 <button type="button" @click="removeService(sIdx)"
@@ -329,8 +329,8 @@
                 }
             },
             select(result) {
-                this.query = result.id + ' - ' +result.name;
-                this.selectedValue = result.id;
+                this.query = result.idnumber + ' - ' +result.bpname;
+                this.selectedValue = result.idnumber;
                 this.results = [];
             }
         };

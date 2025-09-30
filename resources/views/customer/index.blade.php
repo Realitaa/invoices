@@ -1,3 +1,5 @@
+
+
 @extends('layouts.app')
 
 @section('title', 'Tabel customer')
@@ -45,8 +47,8 @@
                 <tbody class="text-slate-600">
                     @foreach ($customers as $customer)
                         <tr class="border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-3 px-6 text-left">{{ $customer->id_number }}</td>
-                            <td class="py-3 px-6 text-left">{{ $customer->account_name }}</td>
+                            <td class="py-3 px-6 text-left">{{ $customer->idnumber }}</td>
+                            <td class="py-3 px-6 text-left">{{ $customer->bpname }}</td>
                             <td class="py-3 px-6 text-left">{{ $customer->npwp_trems }}</td>
                             <td class="py-3 px-6 text-left">{{ $customer->ubis }}</td>
                             <td class="py-3 px-6 text-left">{{ $customer->bisnis_area }}</td>

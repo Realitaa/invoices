@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Customer;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class CustomerController extends Controller
 {
@@ -12,18 +14,41 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        // Ambil query parameter dari request
-        $perPage = $request->query('perPage', 10); // Default 10 item per halaman
+        // Tentukan nama tabel berdasarkan tahun dan bulan saat ini
+        $currentMonth = Carbon::now()->format('Ym'); // Misal: 202509
+        $tableName = "NP_{$currentMonth}";
 
-        // Bangun query
-        $customers = Customer::select('*');
+        try {
+            // Cek apakah tabel ada
+            if (Schema::hasTable($tableName)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Tabel {$tableName} tidak ditemukan."
+                ], 404);
+            }
 
-        // Paginate dengan query parameter
-        $customers = $customers->paginate($perPage)->appends([
-            'perPage' => $perPage,
-        ]);
+            // Ambil parameter per_page dari query string, default 10
+            $perPage = $request->query('per_page', 10);
 
-        return view('customer.index', compact('customers'));
+            // Validasi per_page agar berupa angka positif
+            if (!is_numeric($perPage) || $perPage < 1) {
+                $perPage = 10;
+            }
+
+            // Ambil data unik berdasarkan IDNUMBER dengan paginasi
+            $customers = DB::connection('oracle')->table($tableName)
+                ->select('IDNUMBER', 'BPNAME', 'NPWP_TREMS', 'UBIS', 'BISNIS_AREA', 'BUSINESS_SHARE', 'DIVISI', 'WITEL')
+                ->distinct('IDNUMBER') // Ambil data unik berdasarkan IDNUMBER
+                ->paginate($perPage);
+
+            return view('customer.index', compact('customers'));
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat mengambil data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -98,13 +123,17 @@ class CustomerController extends Controller
         // Ambil query parameter dari request
         $search = $request->query('query', '');
 
+        // Tentukan nama tabel berdasarkan tahun dan bulan saat ini
+        $currentMonth = Carbon::now()->format('Ym'); // Misal: 202509
+        $tableName = "NP_{$currentMonth}";
+
         // Bangun query
-        $query = Customer::query();
 
         if (!empty($search)) {
-            $query->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('npwp', 'like', '%' . $search . '%')
-                  ->orWhere('address', 'like', '%' . $search . '%');
+            $query = DB::connection('oracle')->table($tableName)
+            ->select('IDNUMBER', 'BPNAME')
+            ->distinct()
+            ->whereRaw("BPNAME LIKE '%" . strtoupper($search) . "%' OR IDNUMBER LIKE '%" . strtoupper($search) . "%'");
         }
 
         // Ambil maksimal 10 data

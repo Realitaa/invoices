@@ -11,16 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invoice_reason', function (Blueprint $table) {
+        Schema::create('invoice_manual_products', function (Blueprint $table) {
             $table->id();
-            $table->string('invoice_id');
-            $table->text('manual_invoice_reason');
-            $table->string('order_number');
-            $table->string('last_status');
-            $table->date('commitment');
-            $table->timestamps();
-
-            $table->foreign('invoice_id')->references('id')->on('invoices')->onDelete('cascade');
+            $table->foreignId('invoice_manual_id')->constrained('invoice_manual')->onDelete('cascade');
+            $table->string('product_name')->nullable();
         });
     }
 

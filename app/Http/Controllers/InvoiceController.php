@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
+
 class InvoiceController extends Controller
 {
     /**
