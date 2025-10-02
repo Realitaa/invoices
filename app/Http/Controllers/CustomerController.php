@@ -17,6 +17,7 @@ class CustomerController extends Controller
         // Tentukan nama tabel berdasarkan tahun dan bulan saat ini
         $currentMonth = Carbon::now()->format('Ym'); // Misal: 202509
         $tableName = "NP_{$currentMonth}";
+        // $tableName = "NP_202509";
 
         try {
             // Cek apakah tabel ada

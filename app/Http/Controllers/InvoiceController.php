@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\InvoiceManuals;
+use App\Models\InvoiceManual;
+use App\Models\InvoiceManualProduct;
+use App\Models\InvoiceManualSubproduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 class InvoiceController extends Controller
 {
     /**
@@ -18,7 +22,7 @@ class InvoiceController extends Controller
         $perPage = $request->query('perPage', 10); // Default 10 item per halaman
 
         // Bangun query
-        $invoices = InvoiceManuals::select('*');
+        $invoices = InvoiceManual::select('*');
             // ->join('customers', 'invoices.customer_id', '=', 'customers.id');
 
         // Paginate dengan query parameter
@@ -42,29 +46,69 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi data
-        $validated = $request->validate([
-            'idnumber' => 'nullable|string|max:255',
-            'nama' => 'nullable|string|max:255',
-            'alamat' => 'nullable|string',
-            'nomor_tagihan' => 'nullable|string|max:255',
-            'npwp' => 'nullable|string|max:255',
-            'tahun_tagihan' => 'nullable|integer',
-            'bulan_tagihan' => 'nullable|integer|min:1|max:12',
-            'tanggal_akhir_pembayaran' => 'nullable|date',
-            'tipe_invoice_manual' => 'nullable|in:PROSES AOSODOMORO,RENEWAL KONTRAK,ADJUSTMENT,BUNDLING,BY REKON/USAGE',
-            'keterangan_invoice_manual' => 'nullable|string',
-            'nomor_order' => 'nullable|string|max:255',
-            'status_order_terakhir' => 'nullable|string|max:255',
-            'tanggal_komitmen_penyelesaian' => 'nullable|string|max:255',
+        DB::beginTransaction();
+        try {
+            // 1. Simpan invoice_manual
+            $invoice = InvoiceManual::create([
+                'idnumber' => $request->idnumber,
+                'nama' => $request->nama,
+                'alamat' => $request->alamat,
+                'nomor_tagihan' => $request->nomor_tagihan,
+                'npwp' => $request->npwp,
+                'tahun_tagihan' => $request->tahun_tagihan,
+                'bulan_tagihan' => $request->bulan_tagihan,
+                'tanggal_akhir_pembayaran' => $request->tanggal_akhir_pembayaran,
+                'tipe_invoice_manual' => $request->tipe_invoice_manual,
+                'keterangan_invoice_manual' => $request->keterangan_invoice_manual,
+                'nomor_order' => $request->nomor_order,
+                'status_order_terakhir' => $request->status_order_terakhir,
+            ]);
+
+            // \Log::debug('Decoded products:', json_decode($request->products, true));
+            // Output hasil ke log (contoh: dump seluruh objek sebagai array)
+        Log::info('Invoice baru dibuat', [
+            'invoice_id' => $invoice->id,
+            'full_data' => $invoice->toArray(), // Konversi model ke array untuk logging mudah dibaca
         ]);
 
-        // Simpan ke database
-        $invoice = InvoiceManuals::create($validated);
+            // 2. Ambil JSON products dari request
+            $products = json_decode($request->products, true); // pastikan dikirim sebagai string JSON
 
-        // Response, bisa redirect atau json
-        return redirect()->route('invoice.index')
-            ->with('success', 'Invoice manual berhasil ditambahkan.');
+            if ($products && is_array($products)) {
+                \Log::debug('Decoded products:', json_decode($request->products, true));
+                foreach ($products as $p) {
+                    // Simpan ke invoice_manual_products
+                    $product = InvoiceManualProduct::create([
+                        'invoice_manual_id' => $invoice->id,
+                        'product_name' => $p['product_name'] ?? null,
+                    ]);
+
+                    // 3. Loop items subproducts
+                    if (!empty($p['items']) && is_array($p['items'])) {
+                        \Log::debug('Decoded products:', json_decode($request->products, true));
+                        foreach ($p['items'] as $sp) {
+                            InvoiceManualSubproduct::create([
+                                'invoice_manual_product_id' => $product->id,
+                                'subproduct_sid' => $sp['product_sid'] ?? null,
+                                'subproduct_desc' => $sp['desc'] ?? null,
+                                'subproduct_bw' => $sp['bw'] ?? null,
+                                'subproduct_period' => $sp['period'] ?? null,
+                                'subproduct_amount' => $sp['amount'] ?? null,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('invoice.index')
+                ->with('success', 'Invoice manual beserta produk berhasil ditambahkan.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with(['error' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -101,7 +145,7 @@ class InvoiceController extends Controller
 
     public function print($num)
     {
-        $invoice = Invoice::select('*')
+        $invoice = InvoiceManual::select('*')
             ->join('customers', 'invoices.customer_id', '=', 'customers.id')
             ->where('invoices.id', $num)
             ->firstOrFail();

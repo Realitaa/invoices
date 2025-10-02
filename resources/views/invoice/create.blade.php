@@ -4,26 +4,28 @@
 
 @section('scripts')
 <script>
-    function serviceTable() {
+    function productTable() {
         return {
-            services: [],
-            addService() {
-                this.services.push({
+            products: [],
+            get jsonProducts() {
+                return JSON.stringify(this.products); // akan masuk ke hidden input
+            },
+            addProduct() {
+                this.products.push({
                     id: Date.now() + Math.random(),
-                    name: '',
                     items: []
                 });
             },
-            removeService(idx) {
-                this.services.splice(idx, 1);
+            removeProduct(idx) {
+                this.products.splice(idx, 1);
             },
-            addServiceItem(serviceIdx) {
-                this.services[serviceIdx].items.push({
+            addProductItem(productIdx) {
+                this.products[productIdx].items.push({
                     id: Date.now() + Math.random(),
                 });
             },
-            removeServiceItem(serviceIdx, itemIdx) {
-                this.services[serviceIdx].items.splice(itemIdx, 1);
+            removeProductItem(productIdx, itemIdx) {
+                this.products[productIdx].items.splice(itemIdx, 1);
             }
         }
     }
@@ -267,79 +269,82 @@
                     @enderror
                 </div>
 
-            <h2 class="text-xl font-bold text-gray-900">Detail Service</h2>
+            <h2 class="text-xl font-bold text-gray-900">Detail Product</h2>
 
-            <div x-data="serviceTable()" class="mt-6">
-    <!-- Tombol tambah service -->
-    <button type="button"
-        @click="addService"
-        class="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-        + Tambah Service
-    </button>
+            <div x-data="productTable()" class="mt-6">
+                <!-- hidden input untuk JSON -->
+                <input type="hidden" name="products" x-model="jsonProducts">
+                <!-- Tombol tambah Product -->
+                <button type="button"
+                    @click="addProduct"
+                    class="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                    + Tambah Product
+                </button>
 
-    <!-- Tabel Service dan Service Item -->
-    <template x-for="(service, sIdx) in services" :key="service.id">
-        <div class="mb-6 border rounded p-4 bg-gray-50">
-            <div class="flex items-center mb-2">
-                <input type="text" x-model="service.name" placeholder="Nama Service"
-                    class="mr-2 px-2 py-1 border rounded w-3/4" />
-                <button type="button" @click="removeService(sIdx)"
-                    class="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">Hapus Service</button>
+                <!-- Tabel Product dan SubProduct -->
+                <template x-for="(product, sIdx) in products" :key="product.id">
+                    <div class="mb-6 border rounded p-4 bg-gray-50">
+                        <div class="flex items-center mb-2">
+                            <input type="text" x-model="product.product_name" placeholder="Nama Product"
+                                class="mr-2 px-2 py-1 border rounded w-3/4" />
+                            <button type="button" @click="removeProduct(sIdx)"
+                                class="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">Hapus Product</button>
+                        </div>
+
+                        <!-- Tombol tambah Product item -->
+                        <button type="button"
+                            @click="addProductItem(sIdx)"
+                            class="mb-2 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            + Tambah Product Item
+                        </button>
+                        <!-- Tabel Product Item -->
+                        <table class="w-full border mt-2">
+                            <thead>
+                                <tr class="bg-gray-200">
+                                    <th class="p-2 border">DESCRIPTION</th>
+                                    <th class="p-2 border">ID</th>
+                                    <th class="p-2 border">BW</th>
+                                    <th class="p-2 border">PERIODE</th>
+                                    <th class="p-2 border">AMOUNT</th>
+                                    <th class="p-2 border">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(item, iIdx) in product.items" :key="item.id">
+                                    <tr>
+                                        <td class="p-2 border">
+                                            <textarea type="text" x-model="item.desc" placeholder="Deskripsi Item"
+                                                class="px-2 py-1 border rounded w-full"></textarea>
+                                        </td>
+                                        <td class="p-2 border">
+                                            <input type="text" x-model="item.product_sid" class="px-2 py-1 border rounded" />
+                                        </td>
+                                        <td class="p-2 border">
+                                            <input type="text" x-model="item.bw" class="px-2 py-1 border rounded w-30" />
+                                        </td>
+                                        <td class="p-2 border">
+                                            <input type="number" x-model="item.period" class="px-2 py-1 border rounded w-20" />
+                                        </td>
+                                        <td class="p-2 border">
+                                            <input type="number" x-model="item.amount" class="px-2 py-1 border rounded" />
+                                        </td>
+                                        <td class="p-2 border">
+                                            <button type="button" @click="removeproductItem(sIdx, iIdx)"
+                                                class="px-2 py-1 bg-red-400 text-white rounded hover:bg-red-600">Hapus</button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+
+                <!-- Debug JSON -->
+                <div class="mt-4">
+                    <h3 class="font-bold">Debug JSON:</h3>
+                    <pre class="bg-gray-100 p-2 rounded text-xs" x-text="JSON.stringify(products, null, 2)"></pre>
+                </div>
             </div>
-            <!-- Tombol tambah service item -->
-            <button type="button"
-                @click="addServiceItem(sIdx)"
-                class="mb-2 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
-                + Tambah Service Item
-            </button>
-            <!-- Tabel Service Item -->
-            <table class="w-full border mt-2">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="p-2 border">DESCRIPTION</th>
-                        <th class="p-2 border">ID</th>
-                        <th class="p-2 border">BW</th>
-                        <th class="p-2 border">PERIODE</th>
-                        <th class="p-2 border">AMOUNT</th>
-                        <th class="p-2 border">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="(item, iIdx) in service.items" :key="item.id">
-                        <tr>
-                            <td class="p-2 border">
-                                <textarea type="text" x-model="item.description" placeholder="Deskripsi Item"
-                                    class="px-2 py-1 border rounded w-full"></textarea>
-                            </td>
-                            <td class="p-2 border">
-                                <input type="text" x-model="item.service_item_id" class="px-2 py-1 border rounded" />
-                            </td>
-                            <td class="p-2 border">
-                                <input type="text" x-model="item.bandwith" class="px-2 py-1 border rounded w-30" />
-                            </td>
-                            <td class="p-2 border">
-                                <input type="text" x-model="item.periode" class="px-2 py-1 border rounded w-20" />
-                            </td>
-                            <td class="p-2 border">
-                                <input type="text" x-model="item.amount" class="px-2 py-1 border rounded" />
-                            </td>
-                            <td class="p-2 border">
-                                <button type="button" @click="removeServiceItem(sIdx, iIdx)"
-                                    class="px-2 py-1 bg-red-400 text-white rounded hover:bg-red-600">Hapus</button>
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
-    </template>
-
-    <!-- Debug JSON -->
-    <div class="mt-4">
-        <h3 class="font-bold">Debug JSON:</h3>
-        <pre class="bg-gray-100 p-2 rounded text-xs" x-text="JSON.stringify(services, null, 2)"></pre>
-    </div>
-</div>
 
             <!-- Form Actions -->
             <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">

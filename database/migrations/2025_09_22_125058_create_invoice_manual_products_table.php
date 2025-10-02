@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('invoice_manual_id')->constrained('invoice_manuals')->onDelete('cascade');
             $table->string('product_name')->nullable();
+            $table->timestamps();
         });
     }
 
