@@ -20,6 +20,6 @@ class InvoiceManualProduct extends Model
 
     public function subproducts()
     {
-        return $this->hasMany(InvoiceManualSubproduct::class);
+        return $this->hasMany(InvoiceManualSubproduct::class, 'invoice_manual_product_id', 'id');
     }
 }

@@ -7,10 +7,11 @@ use App\Models\InvoiceManual;
 use App\Models\InvoiceManualProduct;
 use App\Models\InvoiceManualSubproduct;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+
 class InvoiceController extends Controller
 {
     /**
@@ -23,7 +24,6 @@ class InvoiceController extends Controller
 
         // Bangun query
         $invoices = InvoiceManual::select('*');
-            // ->join('customers', 'invoices.customer_id', '=', 'customers.id');
 
         // Paginate dengan query parameter
         $invoices = $invoices->paginate($perPage)->appends([
@@ -64,18 +64,10 @@ class InvoiceController extends Controller
                 'status_order_terakhir' => $request->status_order_terakhir,
             ]);
 
-            // \Log::debug('Decoded products:', json_decode($request->products, true));
-            // Output hasil ke log (contoh: dump seluruh objek sebagai array)
-        Log::info('Invoice baru dibuat', [
-            'invoice_id' => $invoice->id,
-            'full_data' => $invoice->toArray(), // Konversi model ke array untuk logging mudah dibaca
-        ]);
-
             // 2. Ambil JSON products dari request
             $products = json_decode($request->products, true); // pastikan dikirim sebagai string JSON
 
             if ($products && is_array($products)) {
-                \Log::debug('Decoded products:', json_decode($request->products, true));
                 foreach ($products as $p) {
                     // Simpan ke invoice_manual_products
                     $product = InvoiceManualProduct::create([
@@ -85,7 +77,6 @@ class InvoiceController extends Controller
 
                     // 3. Loop items subproducts
                     if (!empty($p['items']) && is_array($p['items'])) {
-                        \Log::debug('Decoded products:', json_decode($request->products, true));
                         foreach ($p['items'] as $sp) {
                             InvoiceManualSubproduct::create([
                                 'invoice_manual_product_id' => $product->id,
@@ -145,30 +136,52 @@ class InvoiceController extends Controller
 
     public function print($num)
     {
+        $currentMonth = Carbon::now()->format('Ym');
+        $tableName = "NP_{$currentMonth}";
+        // $customer = DB::connection('oracle')->table($tableName)
+        // ->select('IDNUMBER', 'BPNAME', 'NPWP_TREMS', 'UBIS', 'BISNIS_AREA', 'BUSINESS_SHARE', 'DIVISI', 'WITEL')
+        // ->where('idnumber',  $num);
         $invoice = InvoiceManual::select('*')
-            ->join('customers', 'invoices.customer_id', '=', 'customers.id')
-            ->where('invoices.id', $num)
+            ->where('invoice_manuals.id', $num)
             ->firstOrFail();
 
-        // Calculate 11% of tax
-        $tax = 0.11 * $invoice->amount;
-        $invoice->tax = $tax;
-        $gtotal = round($invoice->amount + $tax);
-        // Spell the number in Indonesian words
+        $products = InvoiceManualProduct::with('subproducts')
+        ->where('invoice_manual_id', $invoice->id)
+        ->get();
+
+
+
+        // Calculate subtotal from all subproducts and for each product
+        $subTotal = 0;
+        foreach ($products as $product) {
+            $productTotal = $product->subproducts->sum('subproduct_amount');
+            $product->total_amount = Number::format($productTotal, 0, locale: 'id_ID');
+            $subTotal += $productTotal;
+        }
+
+        // Calculate tax from subproducts
+        $taxAmount = 0.11; // 11%
+        $tax = round($subTotal * $taxAmount);
+
+        // Calculate grand total
+        $gtotal = $subTotal + $tax;
+
+        // Spell the number in Indonesian and English words
         $invoice->terbilang = Str::headline(Number::spell($gtotal, locale: 'id_ID'));
-        // Spell the number in English words
         $invoice->spelled = Str::headline(Number::spell($gtotal));
+
         // Format amount, tax, and grand total in Indonesian Rupiah format without decimal places
-        $invoice->grand = Number::format($gtotal, 0, locale: 'id_ID');
-        // Format amount in Indonesian Rupiah format without decimal places
-        $invoice->amount = Number::format($invoice->amount, 0, locale: 'id_ID');
-        // Format tax in Indonesian Rupiah format without decimal places
+        $invoice->subTotal = Number::format($subTotal, 0, locale: 'id_ID');
         $invoice->tax = Number::format($tax, 0, locale: 'id_ID');
+        $invoice->grand = Number::format($gtotal, 0, locale: 'id_ID');
+
         // Payment Status
         $invoice->status = $invoice->payment ? 'Completed Payment' : 'Pending Payment';
         // QrCode data
-        $invoice->qrdata = $invoice->name . "\nNOMOR INVOICE : " . $invoice->id . '-' . date('Ymd') . "\nAMOUNT : " . $invoice->amount;
+        $invoice->qrdata = $invoice->nama . "\nNOMOR INVOICE : " . $invoice->nomor_tagihan . "\nAMOUNT : " . $invoice->gtotal;
+        // Formatting month
+        $invoice->bulan_tagihan = sprintf("%02d", $invoice->bulan_tagihan);
 
-        return view('invoice.print', compact('invoice'));
+        return view('invoice.print', compact('invoice', 'products'));
     }
 }

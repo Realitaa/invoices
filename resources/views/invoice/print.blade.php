@@ -1,3 +1,5 @@
+
+
 @extends('layouts.paper')
 
 @section('title', 'Print Invoice')
@@ -29,9 +31,9 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ $invoice->id }}-{{ $invoice->account_id }}</td>
-                <td></td>
-                <td>{{ $invoice->account_id }}</td>
+                <td>{{ $invoice->nomor_tagihan }}</td>
+                <td>{{ \Carbon\Carbon::parse($invoice->due_date)->locale($invoice->bulan_tagihan)->translatedFormat('F') }}</td>
+                <td>{{ $invoice->idnumber }}</td>
                 <td>{{ \Carbon\Carbon::parse($invoice->due_date)->locale('id')->translatedFormat('d F Y') }}</td>
             </tr>
         </tbody>
@@ -58,11 +60,13 @@
             <th class="bg-red-500 border-l-2 border-white">AMOUNT</th>
         </thead>
         <tbody>
-            <tr>
-                <td class="w-10 text-center">*</td>
-                <td>IP TRANSIT - TERMIN I</td>
-                <td class="w-50 text-end">{{ $invoice->amount }}</td>
-            </tr>
+            @foreach ($products as $product)
+                <tr>
+                    <td class="w-10 text-center">*</td>
+                    <td>{{ $product->product_name }}</td>
+                    <td class="w-50 text-end">{{ $product->total_amount }}</td>
+                </tr>
+            @endforeach
         </tbody>
     </table>
 
@@ -70,29 +74,29 @@
         <div class="w-[60%] border-y-4 border-l-4 border-r-2 border-solid">
             <p>
                 Payment can be done through direct transfer to one of the virtual account as follows: <br />
-                - Account Name : {{ $invoice->name }} <br />
+                - Account Name : {{ $invoice->nama }} <br />
                 - BANK MANDIRI <br />
                 Nomor Virtual Account: 88111-8-00000014221
             </p>
             <div class="flex justify-end m-2">
-                {!! QrCode::size(100)->generate($invoice->qrdata) !!}
+            {!! QrCode::size(100)->generate($invoice->qrdata) !!}
             </div>
         </div>
         <div class="w-[40%] border-y-4 border-r-4 border-l-2 border-solid">
             <div class="font-bold flex px-1 border-b-4 border-solid">
                 <span class="w-80">Sub Total</span>
                 <span class="w-full text-center">:</span>
-                <span>{{ $invoice->amount }}</span>
+                <span class="w-70 text-right">{{ $invoice->subTotal }}</span>
             </div>
             <div class="font-bold flex px-1 border-b-4 border-solid">
                 <span class="w-80">TAX(VAT)</span>
                 <span class="w-full text-center">:</span>
-                <span>{{ $invoice->tax }}</span>
+                <span class="w-70 text-right">{{ $invoice->tax }}</span>
             </div>
             <div class="font-bold flex px-1 border-b-4 border-solid">
                 <span class="w-80">Grand Total</span>
                 <span class="w-full text-center">:</span>
-                <span>{{ $invoice->grand }}</span>
+                <span class="w-70 text-right">{{ $invoice->grand }}</span>
             </div>
             <div class="text-center flex flex-col">
                 <span>Medan, {{ \Carbon\Carbon::today()->locale('id')->translatedFormat('d F Y') }}</span>
@@ -132,9 +136,9 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ $invoice->id }}-{{ $invoice->account_id }}</td>
-                <td></td>
-                <td>{{ $invoice->account_id }}</td>
+                <td>{{ $invoice->nomor_tagihan }}</td>
+                <td>{{ \Carbon\Carbon::parse($invoice->due_date)->locale($invoice->bulan_tagihan)->translatedFormat('F') }}</td>
+                <td>{{ $invoice->idnumber }}</td>
                 <td>{{ \Carbon\Carbon::parse($invoice->due_date)->locale('id')->translatedFormat('d F Y') }}</td>
             </tr>
         </tbody>
@@ -155,30 +159,25 @@
             <th class="bg-red-500 border-l-2 border-white">AMOUNT</th>
         </thead>
         <tbody>
-            <tr>
-                <td class="w-10 text-center">*</td>
-                <td>IP TRANSIT - TERMIN I</td>
-            </tr>
-            <tr class="font-normal">
-                <td class="w-10 text-center">1. </td>
-                <td class="text-blue-600">IP TRANSIT INTERNATIONAL</td>
-                <td></td>
-                <td class="w-50 text-end text-blue-600">1000 MBPS</td>
-                <td class="w-50 text-end text-blue-600">202504</td>
-                <td class="w-50 text-end">{{ $invoice->amount }}</td>
-            </tr>
-            <tr>
-                <td class="w-10 text-center"></td>
-                <td>{{ $invoice->reason }}</td>
-                <td class="text-blue-600">2076634434</td>
-                <td class="w-50 text-end"></td>
-                <td class="w-50 text-end"></td>
-                <td class="w-50 text-end font-bold">{{ $invoice->amount }}</td>
-            </tr>
-            <tr></tr>
+            @foreach ($products as $product)
+                <tr>
+                    <td class="w-10 text-center">*</td>
+                    <td>{{ $product->product_name }}</td>
+                </tr>
+                @foreach ($product->subproducts as $subproduct)
+                    <tr class="font-normal">
+                        <td class="w-10 text-center">{{ $subproduct->index }}</td>
+                        <td>{{ $subproduct->subproduct_desc }}</td>
+                        <td class="text-end">{{ $subproduct->subproduct_sid }}</td>
+                        <td class="w-50 text-end">{{ $subproduct->subproduct_bw }}</td>
+                        <td class="w-50 text-end">{{ $subproduct->subproduct_period }}</td>
+                        <td class="w-50 text-end">{{ number_format($subproduct->subproduct_amount, 0, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+            @endforeach
             <tr>
                 <td colspan="5" class="text-end font-bold">TOTAL:</td>
-                <td class="font-bold text-end">{{ $invoice->amount }}</td>
+                <td class="font-bold text-end">{{ $invoice->subTotal }}</td>
             </tr>
             <tr>
                 <td colspan="5" class="text-end font-bold">TAX(VAT):</td>
@@ -198,7 +197,7 @@
 @section('page3')
 <div class="w-full border-4">
     <h1 class="underline font-bold text-3xl tracking-widest text-center">OFFICIAL RECEIPT</h1>
-    <p class="text-center">NO : {{ $invoice->id }}-periode</p>
+    <p class="text-center">NO : {{ $invoice->nomor_tagihan }}</p>
 
     <table class="mt-8 text-sm">
         <tr class="align-top">
@@ -208,12 +207,14 @@
             </td>
             <td class="px-4">-</td>
             <td class="w-130">
-                {{ $invoice->name }} <br />
-                {{ $invoice->address }} <br />
+                {{ $invoice->nama }} <br />
+                {{ $invoice->alamat }} <br />
                 <br />
                 NPWP : {{ $invoice->npwp }}
             </td>
-            <td class="p-3">{!! QrCode::size(100)->generate($invoice->qrdata) !!}</td>
+            <td class="flex justify-end me-4">
+                {!! QrCode::size(100)->generate($invoice->qrdata) !!}
+            </td>
         </tr>
         <tr class="align-top">
             <td class="w-35 pl-3">
@@ -243,19 +244,20 @@
                         <tr>
                             <td>Invoice Number</td>
                             <td class="px-2">:</td>
-                            <td>{{ $invoice->id }}-periode</td>
+                            <td>{{ $invoice->nomor_tagihan }}</td>
                         </tr>
                         <tr>
                             <td>Billing Month</td>
                             <td class="px-2">:</td>
-                            <td>periode</td>
+                            {{ \Carbon\Carbon::today()->locale('id')->translatedFormat('d F Y') }}
+                            <td>{{ \Carbon\Carbon::create(month: $invoice->bulan_tagihan)->isoFormat('MMMM') . ' ' . $invoice->tahun_tagihan }}</td>
                         </tr>
                     </table>
                     <table>
                         <tr>
                             <td>Biaya / Cost</td>
                             <td class="px-2">:</td>
-                            <td class="text-end">{{ $invoice->amount }}</td>
+                            <td class="text-end">{{ $invoice->subTotal }}</td>
                         </tr>
                         <tr>
                             <td>PPN / VAT</td>
