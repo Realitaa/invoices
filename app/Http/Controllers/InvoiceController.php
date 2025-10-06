@@ -20,13 +20,22 @@ class InvoiceController extends Controller
     public function index(Request $request)
     {
         // Ambil query parameter dari request
-        $perPage = $request->query('perPage', 10); // Default 10 item per halaman
+        $perPage = $request->query('perPage', 10);
+        $search = $request->query('search');
 
         // Bangun query
         $invoices = InvoiceManual::select('*');
 
+        // Tambahkan filter pencarian jika ada
+        if ($search) {
+            $invoices
+                ->where('nama', 'like', '%' . $search . '%')
+                ->orWhere('idnumber', 'like', '%' . $search . '%');
+        }
+
         // Paginate dengan query parameter
         $invoices = $invoices->paginate($perPage)->appends([
+            'search' => $search,
             'perPage' => $perPage,
         ]);
 
@@ -131,7 +140,15 @@ class InvoiceController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            // Temukan invoice berdasarkan ID atau gagal
+            $invoice = InvoiceManual::findOrFail($id);
+            $invoice->delete();
+
+            return redirect()->route('invoice.index')->with('success', 'Invoice berhasil dihapus.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus invoice: ' . $e->getMessage());
+        }
     }
 
     public function print($num)
