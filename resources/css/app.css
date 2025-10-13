@@ -10,3 +10,15 @@
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
 }
+
+.th-no {
+    @apply bg-[#F70506] text-white font-medium py-2;
+}
+
+.th-data {
+    @apply bg-[#F70506] border-l-2 border-white text-white font-normal py-2;
+}
+
+.thead-header {
+    @apply bg-[#EBEAE6] border border-[#928889] border-t-0 font-normal mx-auto rounded-b-xl w-40;
+}

@@ -73,6 +73,7 @@
 
             <h2 class="text-xl font-bold text-gray-900">Detail Invoice</h2>
 
+            <!-- Row 1: Pemilik Invoice, Nomor Tagihan, idnumber, nama and npwp -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div x-data="dropdownSearch()" class="relative">
                     <label for="searchable_dropdown" class="block text-sm font-medium text-gray-700 mb-2">
@@ -117,7 +118,7 @@
                 </div>
             </div>
 
-            <!-- Row 1: Reason and Due Date -->
+            <!-- Row 2: Tipe Invoices Manual and Tanggal Akhir Pembayaran -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="reason" class="block text-sm font-medium text-gray-700 mb-2">
@@ -143,9 +144,10 @@
                     <label for="tanggal_akhir_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
                         Tanggal Akhir Pembayaran <span class="text-red-500">*</span>
                     </label>
-                    <input type="date"
+                    <input type="text"
                            id="tanggal_akhir_pembayaran"
                            name="tanggal_akhir_pembayaran"
+                           datepicker
                            value="{{ old('tanggal_akhir_pembayaran') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('tanggal_akhir_pembayaran') border-red-500 @enderror"
                            required>
@@ -155,21 +157,19 @@
                 </div>
             </div>
 
-            <!-- Row 2: NPWP and Amount -->
+            <!-- Row 3: Bulan Tagihan and Tahun Tagihan -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="bulan_tagihan" class="block text-sm font-medium text-gray-700 mb-2">
                         Bulan Tagihan <span class="text-red-500">*</span>
                     </label>
-                    <select id="bulan_tagihan"
-                            name="bulan_tagihan"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('payment') border-red-500 @enderror"
-                            required>
-                        <option value="">Pilih Bulan</option>
-                        @for ($i = 1; $i <=12; $i++)
-                            <option value="{{ $i }}" {{ old('bulan_tagihan') == $i ? 'selected' : '' }}>{{ DateTime::createFromFormat('!m', $i)->format('m') }}</option>
-                        @endfor
-                    </select>
+                    <input type="text"
+                        id="bulan_tagihan"
+                        name="bulan_tagihan"
+                        placeholder="{{ date('m') }}"
+                        value="{{ old('bulan_tagihan') }}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('due_date') border-red-500 @enderror"
+                        required>
                     @error('bulan_tagihan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -180,18 +180,35 @@
                         Tahun Tagihan <span class="text-red-500">*</span>
                     </label>
                     <input type="year"
-                           id="tahun_tagihan"
-                           name="tahun_tagihan"
-                           value="{{ old('tahun_tagihan') ? old('tahun_tagihan') : date('Y') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('due_date') border-red-500 @enderror"
-                           required>
+                        id="tahun_tagihan"
+                        name="tahun_tagihan"
+                        value="{{ old('tahun_tagihan') ? old('tahun_tagihan') : date('Y') }}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('due_date') border-red-500 @enderror"
+                        required>
                     @error('tahun_tagihan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
-            <!-- Row 3: Address (Full Width) -->
+            <!-- Row 4: Tanggal Tanda Tangan (default ke tanggal 1 di bulan saat ini) -->
+            <div>
+                <label for="tanggal_tanda_tangan" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tanggal Tanda Tangan <span class="text-red-500">*</span>
+                </label>
+                <input type="text"
+                       id="tanggal_tanda_tangan"
+                       name="tanggal_tanda_tangan"
+                       datepicker
+                       value="{{ old('tanggal_tanda_tangan') ? old('tanggal_tanda_tangan') : $firstDayofMonth }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('due_date') border-red-500 @enderror"
+                       required>
+                @error('tanggal_tanda_tangan')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Row 5: Alamat (Full Width) -->
             <div>
                 <label for="alamat" class="block text-sm font-medium text-gray-700 mb-2">
                     Alamat
@@ -230,7 +247,6 @@
                     <input type="text"
                            id="nomor_order"
                            name="nomor_order"
-                           value="{{ old('nomor_order') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('due_date') border-red-500 @enderror"
                            required>
                     @error('nomor_order')
@@ -242,9 +258,10 @@
                     <label for="tanggal_komitmen_penyelesaian" class="block text-sm font-medium text-gray-700 mb-2">
                         Tanggal Komitmen Penyelesaian <span class="text-red-500">*</span>
                     </label>
-                    <input type="date"
+                    <input type="text"
                            id="tanggal_komitmen_penyelesaian"
                            name="tanggal_komitmen_penyelesaian"
+                           datepicker
                            value="{{ old('tanggal_komitmen_penyelesaian') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('tanggal_komitmen_penyelesaian') border-red-500 @enderror"
                            required>
@@ -340,10 +357,10 @@
                 </template>
 
                 <!-- Debug JSON -->
-                <div class="mt-4">
+                <!-- <div class="mt-4">
                     <h3 class="font-bold">Debug JSON:</h3>
                     <pre class="bg-gray-100 p-2 rounded text-xs" x-text="JSON.stringify(products, null, 2)"></pre>
-                </div>
+                </div> -->
             </div>
 
             <!-- Form Actions -->
