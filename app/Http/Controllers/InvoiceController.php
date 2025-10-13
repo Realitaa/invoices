@@ -47,7 +47,8 @@ class InvoiceController extends Controller
      */
     public function create()
     {
-        return view('invoice.create');
+        $firstDayofMonth = Carbon::now()->startOfMonth();
+        return view('invoice.create', compact('firstDayofMonth'));
     }
 
     /**
@@ -55,26 +56,45 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
+        // 1. Validasi semua input dari form
+        $validated = $request->validate([
+            'alamat' => 'required|string',
+            'nomor_tagihan' => 'required|string|max:255|unique:invoice_manuals,nomor_tagihan',
+            'tahun_tagihan' => 'required|numeric|digits:4',
+            'bulan_tagihan' => 'required|numeric|between:1,12',
+            'tanggal_akhir_pembayaran' => 'required|date',
+            'tipe_invoice_manual' => 'required|string|max:255',
+            'keterangan_invoice_manual' => 'nullable|string',
+            'nomor_order' => 'required|string|max:255',
+            'status_order_terakhir' => 'required|string|max:255',
+            'tanggal_tanda_tangan' => 'required|date',
+            'products' => 'required|json',
+        ]);
+
+        // Validasi untuk products JSON
+        $products = json_decode($request->products, true);
+        // if (empty($products)) {
+        //     return back()->withErrors(['products' => 'Minimal harus ada satu produk.'])->withInput();
+        // }
+
         DB::beginTransaction();
         try {
-            // 1. Simpan invoice_manual
+            // 2. Simpan invoice_manual menggunakan data yang sudah divalidasi
             $invoice = InvoiceManual::create([
-                'idnumber' => $request->idnumber,
-                'nama' => $request->nama,
-                'alamat' => $request->alamat,
-                'nomor_tagihan' => $request->nomor_tagihan,
-                'npwp' => $request->npwp,
-                'tahun_tagihan' => $request->tahun_tagihan,
-                'bulan_tagihan' => $request->bulan_tagihan,
-                'tanggal_akhir_pembayaran' => $request->tanggal_akhir_pembayaran,
-                'tipe_invoice_manual' => $request->tipe_invoice_manual,
-                'keterangan_invoice_manual' => $request->keterangan_invoice_manual,
-                'nomor_order' => $request->nomor_order,
-                'status_order_terakhir' => $request->status_order_terakhir,
+                'idnumber' => $validated['idnumber'],
+                'nama' => $validated['nama'],
+                'alamat' => $validated['alamat'],
+                'nomor_tagihan' => $validated['nomor_tagihan'],
+                'npwp' => $validated['npwp'],
+                'tahun_tagihan' => $validated['tahun_tagihan'],
+                'bulan_tagihan' => $validated['bulan_tagihan'],
+                'tanggal_akhir_pembayaran' => $validated['tanggal_akhir_pembayaran'],
+                'tipe_invoice_manual' => $validated['tipe_invoice_manual'],
+                'keterangan_invoice_manual' => $validated['keterangan_invoice_manual'],
+                'nomor_order' => $validated['nomor_order'],
+                'status_order_terakhir' => $validated['status_order_terakhir'],
+                'tanggal_tanda_tangan' => $validated['tanggal_tanda_tangan'],
             ]);
-
-            // 2. Ambil JSON products dari request
-            $products = json_decode($request->products, true); // pastikan dikirim sebagai string JSON
 
             if ($products && is_array($products)) {
                 foreach ($products as $p) {
@@ -84,7 +104,7 @@ class InvoiceController extends Controller
                         'product_name' => $p['product_name'] ?? null,
                     ]);
 
-                    // 3. Loop items subproducts
+                    // Loop items subproducts
                     if (!empty($p['items']) && is_array($p['items'])) {
                         foreach ($p['items'] as $sp) {
                             InvoiceManualSubproduct::create([
@@ -166,8 +186,6 @@ class InvoiceController extends Controller
         ->where('invoice_manual_id', $invoice->id)
         ->get();
 
-
-
         // Calculate subtotal from all subproducts and for each product
         $subTotal = 0;
         foreach ($products as $product) {
@@ -195,9 +213,10 @@ class InvoiceController extends Controller
         // Payment Status
         $invoice->status = $invoice->payment ? 'Completed Payment' : 'Pending Payment';
         // QrCode data
-        $invoice->qrdata = $invoice->nama . "\nNOMOR INVOICE : " . $invoice->nomor_tagihan . "\nAMOUNT : " . $invoice->gtotal;
+        $invoice->qrdata = $invoice->nama . "\nINVOICE NO : " . $invoice->nomor_tagihan . "\nAMOUNT : IDR " . $gtotal;
         // Formatting month
         $invoice->bulan_tagihan = sprintf("%02d", $invoice->bulan_tagihan);
+        $invoice->bulan_tahun_tagihan = Carbon::create($invoice->tahun_tagihan, $invoice->bulan_tagihan)->locale('id')->translatedFormat('F Y');
 
         return view('invoice.print', compact('invoice', 'products'));
     }
