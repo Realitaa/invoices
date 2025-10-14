@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
+use Spatie\Browsershot\Browsershot;
 
 class InvoiceController extends Controller
 {
@@ -218,6 +219,15 @@ class InvoiceController extends Controller
         $invoice->bulan_tagihan = sprintf("%02d", $invoice->bulan_tagihan);
         $invoice->bulan_tahun_tagihan = Carbon::create($invoice->tahun_tagihan, $invoice->bulan_tagihan)->locale('id')->translatedFormat('F Y');
 
-        return view('invoice.print', compact('invoice', 'products'));
+        // return view('invoice.print', compact('invoice', 'products'));
+        $html = view('invoice.print', compact('invoice', 'products'))->render();
+        $pdf = Browsershot::html($html)
+            ->setOption('landscape', false)
+            ->waitUntilNetworkIdle()
+            ->showBackground() // Aktifkan background graphics
+            ->pdf();
+        return response($pdf)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="invoice-preview.pdf"');
     }
 }
