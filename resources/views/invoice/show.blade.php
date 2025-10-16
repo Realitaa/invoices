@@ -127,6 +127,26 @@
                 </div>
             </div>
 
+            <form action="{{ route('invoices.stamp', $invoice->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="flex items-center justify-center w-full">
+                    <label for="stamped_invoice" id="dropzone-label" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                        <div id="dropzone-content" class="flex flex-col items-center justify-center pt-3 pb-3">
+                            <span class="icon-[clarity--upload-cloud-line] size-11"></span>
+                            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Klik untuk upload</span> atau drag and drop <span class="font-bold">file invoice yang sudah di stamp.</span></p>
+                            <p class="text-xs text-gray-500">File PDF</p>
+                        </div>
+                        <input id="stamped_invoice" name="stamped_invoice" type="file" class="hidden" accept=".pdf" />
+                    </label>
+                </div>
+                @error('stamped_invoice')
+                    <x-toast message="File harus PDF maksimal 2MB!" />
+                @enderror
+                <div class="flex justify-end">
+                    <button type="submit" id="btn-submit" class="mt-4 bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded cursor-pointer hidden">Upload Invoice yang telah di stamp</button>
+                </div>
+            </form>
+
             <!-- Aksi -->
             <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
                 <a href="{{ route('invoice.preview', ['num' => $invoice->id]) }}" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
@@ -139,4 +159,50 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    const dropzoneLabel = document.getElementById('dropzone-label');
+    const fileInput = document.getElementById('stamped_invoice');
+    const dropzoneContent = document.getElementById('dropzone-content');
+    const btnSubmit = document.getElementById('btn-submit');
+
+    function updateDropzoneContent(file) {
+        if (file) {
+            dropzoneContent.innerHTML = `
+                <span class="icon-[mdi--file-check] size-11 text-green-500"></span>
+                <p class="mt-2 text-sm text-gray-700 font-semibold">${file.name}</p>
+                <p class="text-xs text-gray-500">${(file.size / 1024).toFixed(2)} KB</p>
+            `;
+        }
+    }
+
+    dropzoneLabel.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzoneLabel.classList.add('border-blue-500', 'bg-blue-50');
+    });
+
+    dropzoneLabel.addEventListener('dragleave', () => {
+        dropzoneLabel.classList.remove('border-blue-500', 'bg-blue-50');
+    });
+
+    dropzoneLabel.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzoneLabel.classList.remove('border-blue-500', 'bg-blue-50');
+
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            updateDropzoneContent(fileInput.files[0]);
+            btnSubmit.classList.remove('hidden');
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+            updateDropzoneContent(fileInput.files[0]);
+            btnSubmit.classList.remove('hidden');
+        }
+    });
+</script>
 @endsection

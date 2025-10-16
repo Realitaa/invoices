@@ -32,7 +32,7 @@
             <th class="th-data">AMOUNT</th>
         </thead>
         <tbody>
-            @foreach ($products as $product)
+            @foreach ($invoice->products as $product)
                 <tr>
                     <td class="w-10 text-center py-2 align-top">{{ $loop->iteration }}.</td>
                     <td class="py-2">{{ $product->product_name }}</td>
@@ -107,7 +107,7 @@
             <th class="th-data">AMOUNT</th>
         </thead>
         <tbody>
-            @foreach ($products as $product)
+            @foreach ($invoice->products as $product)
                 <tr>
                     <td class="w-10 text-center">&#8226;</td>
                     <td>{{ $product->product_name }}</td>

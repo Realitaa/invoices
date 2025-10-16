@@ -203,22 +203,12 @@ class InvoiceController extends Controller
      */
     private function createPdf($num)
     {
-        $currentMonth = Carbon::now()->format('Ym');
-        $tableName = "NP_{$currentMonth}";
-        // $customer = DB::connection('oracle')->table($tableName)
-        // ->select('IDNUMBER', 'BPNAME', 'NPWP_TREMS', 'UBIS', 'BISNIS_AREA', 'BUSINESS_SHARE', 'DIVISI', 'WITEL')
-        // ->where('idnumber',  $num);
-        $invoice = InvoiceManual::select('*')
-            ->where('id', $num)
-            ->firstOrFail();
-
-        $products = InvoiceManualProduct::with('subproducts')
-        ->where('invoice_manual_id', $invoice->id)
-        ->get();
+        $invoice = InvoiceManual::with(['products.subproducts'])
+            ->findOrFail($num);
 
         // Calculate subtotal from all subproducts and for each product
         $subTotal = 0;
-        foreach ($products as $product) {
+        foreach ($invoice->products as $product) {
             $productTotal = $product->subproducts->sum('subproduct_amount');
             $product->total_amount = Number::format($productTotal, 0, locale: 'id_ID');
             $subTotal += $productTotal;
@@ -248,8 +238,7 @@ class InvoiceController extends Controller
         $invoice->bulan_tagihan = sprintf("%02d", $invoice->bulan_tagihan);
         $invoice->bulan_tahun_tagihan = Carbon::create($invoice->tahun_tagihan, $invoice->bulan_tagihan)->locale('id')->translatedFormat('F Y');
 
-        // return view('invoice.document', compact('invoice', 'products'));
-        $html = view('invoice.document', compact('invoice', 'products'))->render();
+        $html = view('invoice.document', compact('invoice'))->render();
         $pdf = Browsershot::html($html)
             ->setOption('landscape', false)
             ->waitUntilNetworkIdle()
@@ -257,7 +246,7 @@ class InvoiceController extends Controller
             ->pdf();
 
         // Path file di storage (gunakan $num sebagai nama tetap untuk mudah dicek)
-        $filename = "invoice_manual/{$num}/invoice-{$num}.pdf";
+        $filename = "invoice_manual/{$num}/template_invoice.pdf";
 
         // Simpan ke storage disk 'public'
         Storage::disk('public')->put($filename, $pdf);
@@ -269,7 +258,7 @@ class InvoiceController extends Controller
      * Show preview for invoice
      */
     public function preview($num) {
-        $filename = "invoice_manual/{$num}/invoice-{$num}.pdf";
+        $filename = "invoice_manual/{$num}/template_invoice.pdf";
         $sidebar = false;
 
         // Cek jika file belum ada di storage
@@ -288,7 +277,7 @@ class InvoiceController extends Controller
      */
     public function download($num)
     {
-        $filename = "invoice_manual/{$num}/invoice-{$num}.pdf";
+        $filename = "invoice_manual/{$num}/template_invoice.pdf";
 
         // Cek jika file belum ada di storage
         if (!Storage::disk('public')->exists($filename)) {
@@ -296,6 +285,51 @@ class InvoiceController extends Controller
         }
 
         // Return response download
-        return response()->download(storage_path('app/public/' . $filename), "invoice-{$num}.pdf");
+        return response()->download(storage_path('app/public/' . $filename), "template_invoice.pdf");
+    }
+
+    /**
+     * Uploading stamped invoice from peruri
+     */
+    public function stamp(Request $request, $num)
+    {
+        $request->validate([
+            'stamped_invoice' => 'required|file|mimes:pdf|max:2048', // Maks 2MB
+        ]);
+
+        try {
+            $invoice = InvoiceManual::findOrFail($num);
+            $file = $request->file('stamped_invoice');
+
+            // Simpan file ke storage dengan nama yang unik atau spesifik
+            $path = $file->storeAs("invoice_manual/{$invoice->id}", 'stamped_invoice.pdf', 'public');
+
+            return back()->with('success', 'Invoice stempel berhasil di unggah.');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengunggah file: ' . $e->getMessage());
+        }
+    }
+    /**
+     * Uploading tax facture and finalize invoice (boilerplate code)
+     */
+    public function final($request, $num)
+    {
+        $request->validate([
+            'stamped_invoice' => 'required|file|mimes:pdf|max:2048', // Maks 2MB
+        ]);
+
+        try {
+            $invoice = InvoiceManual::findOrFail($num);
+            $file = $request->file('final_invoice');
+
+            // Simpan file ke storage dengan nama yang unik atau spesifik
+            $path = $file->storeAs("invoice_manual/{$invoice->id}", 'final_invoice.pdf', 'public');
+
+            return back()->with('success', 'Faktur pajak berhasil di unggah.');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengunggah file: ' . $e->getMessage());
+        }
     }
 }
