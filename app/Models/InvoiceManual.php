@@ -28,4 +28,12 @@ class InvoiceManual extends Model
         'tanggal_akhir_pembayaran' => 'date',
         'status_order_terakhir' => 'string',
     ];
+
+    /**
+     * Get the products for the invoice.
+     */
+    public function products()
+    {
+        return $this->hasMany(InvoiceManualProduct::class);
+    }
 }

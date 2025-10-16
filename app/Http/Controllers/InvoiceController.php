@@ -138,7 +138,32 @@ class InvoiceController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $invoice = InvoiceManual::with(['products.subproducts'])->findOrFail($id);
+
+        // Calculate subtotal from all subproducts and for each product
+        $subTotal = 0;
+        foreach ($invoice->products as $product) {
+            $productTotal = $product->subproducts->sum('subproduct_amount');
+            $product->total_amount = Number::format($productTotal, 0, locale: 'id_ID');
+            $subTotal += $productTotal;
+        }
+
+        // Calculate tax from subproducts
+        $taxAmount = 0.11; // 11%
+        $tax = round($subTotal * $taxAmount);
+
+        // Calculate grand total
+        $gtotal = $subTotal + $tax;
+
+        // Format amount, tax, and grand total in Indonesian Rupiah format without decimal places
+        $invoice->subTotal = Number::format($subTotal, 0, locale: 'id_ID');
+        $invoice->tax = Number::format($tax, 0, locale: 'id_ID');
+        $invoice->grand = Number::format($gtotal, 0, locale: 'id_ID');
+
+        // Payment Status
+        $invoice->status = $invoice->payment ? 'Completed Payment' : 'Pending Payment';
+
+        return view('invoice.show', compact('invoice'));
     }
 
     /**

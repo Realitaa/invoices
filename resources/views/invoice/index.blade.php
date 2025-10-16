@@ -46,6 +46,7 @@
                 <thead>
                     <tr class="bg-sky-200 text-slate-800 uppercase text-sm leading-normal">
                         <th class="py-3 px-6 text-left">ID Akun</th>
+                        <th class="py-3 px-6 text-left">Periode</th>
                         <th class="py-3 px-6 text-left">Nama Akun</th>
                         <th class="py-3 px-6 text-left">Aksi</th>
                     </tr>
@@ -54,8 +55,12 @@
                     @forelse ($invoices as $invoice)
                         <tr class="border-b border-gray-200 hover:bg-gray-100">
                             <td class="py-3 px-6 text-left">{{ $invoice->idnumber }}</td>
+                            <td class="py-3 px-6 text-left">{{ sprintf("%02d", $invoice->bulan_tagihan) . $invoice->tahun_tagihan }}</td>
                             <td class="py-3 px-6 text-left">{{ $invoice->nama }}</td>
                             <td class="py-3 px-6 text-left flex align-middle space-x-2">
+                                <a href="{{ route('invoice.show', ['invoice' => $invoice->id]) }}" class="text-sky-500 cursor-pointer flex justify-center items-center" title="Detail">
+                                    <span class="icon-[material-symbols--info] size-7"></span>
+                                </a>
                                 <a href="{{ route('invoice.download', ['num' => $invoice->id]) }}" class="text-green-400 cursor-pointer flex justify-center items-center" title="Download">
                                     <span class="icon-[line-md--download] size-7"></span>
                                 </a>
