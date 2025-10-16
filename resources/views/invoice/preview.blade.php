@@ -1,0 +1,1 @@
+<iframe src="{{ $pdfUrl }}" class="w-full h-screen border border-gray-300" width="100%" height="100%"></iframe>

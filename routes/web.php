@@ -6,6 +6,8 @@ use App\Http\Controllers\CustomerController;
 
 Route::view('/', 'dashboard')->name('dashboard.index');
 Route::resource('/invoice', InvoiceController::class);
-Route::get('/invoice/{num}/print', [InvoiceController::class, 'print'])->name('invoice.print');
+Route::get('/invoice/{num}/createpdf', [InvoiceController::class, 'createPdf'])->name('invoice.createpdf');
 Route::resource('/customer', CustomerController::class);
 Route::get('/api/customer/search', [CustomerController::class, 'fetch'])->name('customer.search');
+Route::get('/invoice/{num}/preview', [InvoiceController::class, 'preview'])->name('invoice.preview');
+Route::get('/invoice/{num}/download', [InvoiceController::class, 'download'])->name('invoice.download');

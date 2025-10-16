@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Spatie\Browsershot\Browsershot;
+use Illuminate\Support\Facades\Storage;
 
 class InvoiceController extends Controller
 {
@@ -172,7 +173,10 @@ class InvoiceController extends Controller
         }
     }
 
-    public function print($num)
+    /**
+     * Create PDF invoice
+     */
+    private function createPdf($num)
     {
         $currentMonth = Carbon::now()->format('Ym');
         $tableName = "NP_{$currentMonth}";
@@ -180,7 +184,7 @@ class InvoiceController extends Controller
         // ->select('IDNUMBER', 'BPNAME', 'NPWP_TREMS', 'UBIS', 'BISNIS_AREA', 'BUSINESS_SHARE', 'DIVISI', 'WITEL')
         // ->where('idnumber',  $num);
         $invoice = InvoiceManual::select('*')
-            ->where('invoice_manuals.id', $num)
+            ->where('id', $num)
             ->firstOrFail();
 
         $products = InvoiceManualProduct::with('subproducts')
@@ -219,15 +223,54 @@ class InvoiceController extends Controller
         $invoice->bulan_tagihan = sprintf("%02d", $invoice->bulan_tagihan);
         $invoice->bulan_tahun_tagihan = Carbon::create($invoice->tahun_tagihan, $invoice->bulan_tagihan)->locale('id')->translatedFormat('F Y');
 
-        // return view('invoice.print', compact('invoice', 'products'));
-        $html = view('invoice.print', compact('invoice', 'products'))->render();
+        // return view('invoice.document', compact('invoice', 'products'));
+        $html = view('invoice.document', compact('invoice', 'products'))->render();
         $pdf = Browsershot::html($html)
             ->setOption('landscape', false)
             ->waitUntilNetworkIdle()
             ->showBackground() // Aktifkan background graphics
             ->pdf();
-        return response($pdf)
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="invoice-preview.pdf"');
+
+        // Path file di storage (gunakan $num sebagai nama tetap untuk mudah dicek)
+        $filename = "invoice_manual/{$num}/invoice-{$num}.pdf";
+
+        // Simpan ke storage disk 'public'
+        Storage::disk('public')->put($filename, $pdf);
+
+        return $filename;
+    }
+
+    /**
+     * Show preview for invoice
+     */
+    public function preview($num) {
+        $filename = "invoice_manual/{$num}/invoice-{$num}.pdf";
+        $sidebar = false;
+
+        // Cek jika file belum ada di storage
+        if (!Storage::disk('public')->exists($filename)) {
+            $this->createPdf($num); // Buat PDF jika belum ada
+        }
+
+        // Dapatkan URL publik untuk preview
+        $pdfUrl = Storage::disk('public')->url($filename);
+
+        return view('invoice.preview', compact('pdfUrl'));
+    }
+
+    /**
+     * Download invoice
+     */
+    public function download($num)
+    {
+        $filename = "invoice_manual/{$num}/invoice-{$num}.pdf";
+
+        // Cek jika file belum ada di storage
+        if (!Storage::disk('public')->exists($filename)) {
+            $this->createPdf($num); // Buat PDF jika belum ada
+        }
+
+        // Return response download
+        return response()->download(storage_path('app/public/' . $filename), "invoice-{$num}.pdf");
     }
 }
