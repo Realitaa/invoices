@@ -14,35 +14,11 @@
     </x-sidebar>
 
     @if (session('success'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                Toastify({
-                    text: "{{ session('success') }}",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    style: {
-                        background: "var(--color-green-500)",
-                    }
-                }).showToast();
-            });
-        </script>
+        <x-toast :message="session('success')" type="success" />
     @endif
 
     @if (session('error'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                Toastify({
-                    text: "{{ session('error') }}",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    style: {
-                        background: "var(--color-red-500)",
-                    },
-                }).showToast();
-            });
-        </script>
+        <x-toast :message="session('error')" />
     @endif
 
     @yield('scripts')
